@@ -44,9 +44,9 @@ export function Sidebar({ className, isCollapsed = false, onToggle }: SidebarPro
             color: "text-blue-400",
         },
         {
-            label: "Procurement",
+            label: "Purchase",
             icon: ShoppingCart,
-            href: "/procurement",
+            href: "/purchase",
             color: "text-emerald-400",
         },
         {

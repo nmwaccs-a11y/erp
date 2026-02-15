@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Dashboard from "./pages/dashboard/Dashboard";
-import Procurement from "./pages/procurement/Procurement";
+import Purchase from "./pages/procurement/Purchase";
 import Production from "./pages/production/Production";
 import EnamelProduction from "./pages/production/EnamelProduction";
 import DrawingProduction from "./pages/production/DrawingProduction";
@@ -43,7 +43,7 @@ function App() {
         {/* Transaction Routes */}
         <Route path="/" element={<Navigate to="/auth/login" replace />} />
         <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/procurement" element={<Procurement />} />
+        <Route path="/purchase" element={<Purchase />} />
         <Route path="/rate-management" element={<RateManagement />} />
         <Route path="/production" element={<Production />} />
         <Route path="/production/enamel" element={<EnamelProduction />} />

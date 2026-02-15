@@ -6,98 +6,67 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { useState, useEffect, useRef } from "react";
-import { CalendarIcon, Plus, Trash2, ArrowRightLeft, Banknote, Save, AlertCircle, ShoppingBag } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { Calendar as CalendarIcon, Plus, Trash2, ArrowRightLeft, Banknote, Save, AlertCircle, ShoppingBag } from "lucide-react";
+import { useState, useRef } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
-interface CreateCreditNoteModalProps {
+interface PurchaseReturnModalProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     onSubmit: (data: any) => void;
 }
 
-// Mock Data
-const CUSTOMERS = [
-    { id: "CUST-001", name: "Gateway Motors" },
-    { id: "CUST-002", name: "Alpha Wire Supply" },
-    { id: "CUST-003", name: "Pak Fans Ltd" },
+const SUPPLIERS = [
+    { id: "SUP-001", name: "New Age Copper" },
+    { id: "SUP-002", name: "Metal Exchange Corp" },
 ];
 
-const ITEMS = [
-    { id: "ITM-001", name: "Enamel Wire G-25", defaultRate: 2800, unit: "kg" },
-    { id: "ITM-002", name: "Copper Strip 12mm", defaultRate: 2900, unit: "kg" },
-];
-
-export function CreateCreditNoteModal({ open, onOpenChange, onSubmit }: CreateCreditNoteModalProps) {
+export function PurchaseReturnModal({ open, onOpenChange, onSubmit }: PurchaseReturnModalProps) {
     // Header State
-    const [returnId] = useState(`CN-${new Date().getFullYear()}-${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`);
+    const [returnId] = useState(`DN-${new Date().getFullYear()}-${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`);
     const [date, setDate] = useState<Date | undefined>(new Date());
-    const [customerId, setCustomerId] = useState("");
-    const [originalInv, setOriginalInv] = useState("");
-    const [returnAction, setReturnAction] = useState<"restock" | "scrap">("restock");
+    const [supplierId, setSupplierId] = useState("");
+    const [refInvoice, setRefInvoice] = useState("");
+    const [returnAction, setReturnAction] = useState<"stock" | "financial">("stock");
     const [remarks, setRemarks] = useState("");
-    const [gatePassIn, setGatePassIn] = useState("");
 
-    // Lines
+    // Line Item State
     const [lines, setLines] = useState<any[]>([]);
 
     const itemSelectRef = useRef<HTMLButtonElement>(null);
 
-    // Form Inputs
+    // Form Input State
     const [currentItem, setCurrentItem] = useState("");
     const [currentUnit, setCurrentUnit] = useState("kg");
-    const [currentGross, setCurrentGross] = useState("");
-    const [currentTare, setCurrentTare] = useState("");
-    const [currentRate, setCurrentRate] = useState(""); // Credit Rate
-    const [deduction, setDeduction] = useState("0");
+    const [currentWeight, setCurrentWeight] = useState("");
+    const [currentRate, setCurrentRate] = useState("");
 
-    // Calculated
-    const currentNet = Math.max(0, Number(currentGross) - Number(currentTare));
-    const creditAmountBeforeDeduction = currentNet * Number(currentRate);
-    const deductionAmount = creditAmountBeforeDeduction * (Number(deduction) / 100);
-    const currentCreditAmount = creditAmountBeforeDeduction - deductionAmount;
-
-    const totalCreditAmount = lines.reduce((sum, line) => sum + line.creditAmount, 0);
-
-    // Effect to set unit/rate
-    useEffect(() => {
-        if (currentItem) {
-            const item = ITEMS.find(i => i.id === currentItem);
-            if (item) {
-                setCurrentRate(item.defaultRate.toString());
-                setCurrentUnit(item.unit || "kg");
-                setCurrentTare("0");
-            }
-        }
-    }, [currentItem]);
-
+    // Calculated fields
+    const currentAmount = Number(currentWeight) * Number(currentRate);
+    const totalDebit = lines.reduce((sum, line) => sum + line.amount, 0);
 
     const handleAddLine = () => {
-        if (!currentItem || !currentGross) return;
-
-        const itemDetails = ITEMS.find(i => i.id === currentItem);
+        if (!currentItem || !currentWeight || !currentRate) {
+            return;
+        }
 
         const newLine = {
             id: Math.random().toString(36).substr(2, 9),
-            itemId: currentItem,
-            itemName: itemDetails?.name || "Unknown Item",
+            item: currentItem,
             unit: currentUnit,
-            gross: Number(currentGross),
-            tare: Number(currentTare),
-            netWeight: currentNet,
+            weight: Number(currentWeight),
             rate: Number(currentRate),
-            deductionPercent: Number(deduction),
-            creditAmount: currentCreditAmount
+            amount: currentAmount
         };
 
         setLines([...lines, newLine]);
 
-        // Reset Inputs partially
-        setCurrentGross("");
-        // Keep others
+        // Reset Item Fields but keep Item/Unit for convenience
+        setCurrentWeight("");
+        // setCurrentRate(""); // Rate might be same
 
         setTimeout(() => {
             itemSelectRef.current?.focus();
@@ -110,12 +79,20 @@ export function CreateCreditNoteModal({ open, onOpenChange, onSubmit }: CreateCr
 
     const handleSubmit = () => {
         onSubmit({
-            header: { returnId, date, customerId, originalInv, returnAction, gatePassIn, remarks },
+            header: {
+                returnId,
+                date,
+                supplierId,
+                refInvoice,
+                returnAction,
+                remarks
+            },
             items: lines,
-            totalCreditAmount
+            totalDebit
         });
         onOpenChange(false);
         setLines([]);
+        setSupplierId("");
     };
 
     return (
@@ -124,8 +101,8 @@ export function CreateCreditNoteModal({ open, onOpenChange, onSubmit }: CreateCr
                 <DialogHeader className="px-6 py-4 border-b">
                     <div className="flex items-center justify-between">
                         <div>
-                            <DialogTitle className="text-xl">Sales Return (Credit Note)</DialogTitle>
-                            <DialogDescription>Process returned goods and issue credit.</DialogDescription>
+                            <DialogTitle className="text-xl">Purchase Return (Debit Note)</DialogTitle>
+                            <DialogDescription>Return stock or adjust financial liability.</DialogDescription>
                         </div>
                         <div className="text-right">
                             <div className="text-xs text-slate-500 uppercase tracking-widest">Return ID</div>
@@ -146,13 +123,13 @@ export function CreateCreditNoteModal({ open, onOpenChange, onSubmit }: CreateCr
 
                             <div className="grid gap-4">
                                 <div className="space-y-2">
-                                    <Label>Customer</Label>
-                                    <Select value={customerId} onValueChange={setCustomerId}>
+                                    <Label>Supplier</Label>
+                                    <Select value={supplierId} onValueChange={setSupplierId}>
                                         <SelectTrigger className="bg-white">
-                                            <SelectValue placeholder="Select Customer" />
+                                            <SelectValue placeholder="Select Supplier" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            {CUSTOMERS.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                                            {SUPPLIERS.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
                                         </SelectContent>
                                     </Select>
                                 </div>
@@ -173,32 +150,43 @@ export function CreateCreditNoteModal({ open, onOpenChange, onSubmit }: CreateCr
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label>Return Action</Label>
-                                    <RadioGroup defaultValue="stock" onValueChange={(v: "restock" | "scrap") => setReturnAction(v)} className="flex gap-2">
-                                        <div className="flex-1 flex items-center space-x-2 bg-white px-3 py-2 rounded border shadow-sm">
-                                            <RadioGroupItem value="restock" id="r1" />
-                                            <Label htmlFor="r1" className="cursor-pointer text-xs font-medium">Restock</Label>
-                                        </div>
-                                        <div className="flex-1 flex items-center space-x-2 bg-white px-3 py-2 rounded border shadow-sm">
-                                            <RadioGroupItem value="scrap" id="r2" />
-                                            <Label htmlFor="r2" className="cursor-pointer text-xs font-medium">Scrap</Label>
-                                        </div>
-                                    </RadioGroup>
+                                    <Label>Ref Invoice #</Label>
+                                    <Input
+                                        placeholder="Link original purchase"
+                                        value={refInvoice}
+                                        onChange={e => setRefInvoice(e.target.value)}
+                                        className="bg-white"
+                                    />
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label>Ref Invoice #</Label>
-                                    <Input placeholder="INV-2023-..." value={originalInv} onChange={e => setOriginalInv(e.target.value)} className="bg-white" />
+                                    <Label>Action Type</Label>
+                                    <RadioGroup defaultValue="stock" onValueChange={(v: "stock" | "financial") => setReturnAction(v)} className="flex flex-col gap-2">
+                                        <div className="flex items-center space-x-2 bg-white px-3 py-2 rounded border shadow-sm">
+                                            <RadioGroupItem value="stock" id="r1" />
+                                            <Label htmlFor="r1" className="cursor-pointer flex items-center gap-2 w-full">
+                                                <ArrowRightLeft className="h-4 w-4 text-orange-500" />
+                                                Return Stock
+                                            </Label>
+                                        </div>
+                                        <div className="flex items-center space-x-2 bg-white px-3 py-2 rounded border shadow-sm">
+                                            <RadioGroupItem value="financial" id="r2" />
+                                            <Label htmlFor="r2" className="cursor-pointer flex items-center gap-2 w-full">
+                                                <Banknote className="h-4 w-4 text-blue-500" />
+                                                Financial Only
+                                            </Label>
+                                        </div>
+                                    </RadioGroup>
                                 </div>
                             </div>
                         </div>
 
                         <div className="h-px bg-slate-200" />
 
-                        {/* Item Entry */}
+                        {/* Item Entry Form */}
                         <div className="space-y-4">
                             <h3 className="font-semibold text-slate-900 flex items-center gap-2">
-                                <Plus className="h-4 w-4" /> Add Returned Item
+                                <Plus className="h-4 w-4" /> Add Item
                             </h3>
 
                             <div className="space-y-2">
@@ -208,13 +196,15 @@ export function CreateCreditNoteModal({ open, onOpenChange, onSubmit }: CreateCr
                                         <SelectValue placeholder="Select Item" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {ITEMS.map(i => <SelectItem key={i.id} value={i.id}>{i.name}</SelectItem>)}
+                                        <SelectItem value="copper_cathode">Copper Cathode</SelectItem>
+                                        <SelectItem value="copper_rod">8mm Copper Rod</SelectItem>
+                                        <SelectItem value="scrap_mixed">Mixed Scrap</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-2">
+                            <div className="grid grid-cols-3 gap-2">
+                                <div className="space-y-2 col-span-1">
                                     <Label>Unit</Label>
                                     <Select value={currentUnit} onValueChange={setCurrentUnit}>
                                         <SelectTrigger className="bg-white">
@@ -222,45 +212,44 @@ export function CreateCreditNoteModal({ open, onOpenChange, onSubmit }: CreateCr
                                         </SelectTrigger>
                                         <SelectContent>
                                             <SelectItem value="kg">kg</SelectItem>
+                                            <SelectItem value="metric_ton">MT</SelectItem>
+                                            <SelectItem value="pcs">Pcs</SelectItem>
                                             <SelectItem value="meter">Meter</SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </div>
-                                <div className="space-y-2">
-                                    <Label>Gross Wt</Label>
-                                    <Input type="number" value={currentGross} onChange={e => setCurrentGross(e.target.value)} className="bg-white" />
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label>Tare</Label>
-                                    <Input type="number" value={currentTare} onChange={e => setCurrentTare(e.target.value)} className="bg-white" />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label>Credit Rate</Label>
-                                    <Input type="number" value={currentRate} onChange={e => setCurrentRate(e.target.value)} className="bg-white" />
+                                <div className="space-y-2 col-span-2">
+                                    <Label>{returnAction === 'stock' ? 'Return Weight' : 'Weight'}</Label>
+                                    <Input
+                                        type="number"
+                                        value={currentWeight}
+                                        onChange={(e) => setCurrentWeight(e.target.value)}
+                                        placeholder="0.00"
+                                        className="bg-white"
+                                    />
                                 </div>
                             </div>
 
                             <div className="space-y-2">
-                                <Label>Deduction (%)</Label>
-                                <Input type="number" value={deduction} onChange={e => setDeduction(e.target.value)} className="bg-white text-rose-600" />
+                                <Label>Rate / Cost</Label>
+                                <Input
+                                    type="number"
+                                    value={currentRate}
+                                    onChange={(e) => setCurrentRate(e.target.value)}
+                                    placeholder="0.00"
+                                    className="bg-white"
+                                />
                             </div>
 
                             <div className="p-3 bg-rose-50/50 rounded-lg border border-rose-100">
-                                <div className="flex justify-between items-center mb-1">
-                                    <span className="text-xs text-slate-500">Net Weight</span>
-                                    <span className="font-mono font-bold text-slate-900">{currentNet.toFixed(2)} {currentUnit}</span>
-                                </div>
                                 <div className="flex justify-between items-center">
-                                    <span className="text-xs text-slate-500">Credit Amount</span>
-                                    <span className="font-mono font-bold text-rose-700">{currentCreditAmount.toLocaleString()}</span>
+                                    <span className="text-xs text-rose-700">Debit Amount</span>
+                                    <span className="font-mono font-bold text-rose-700">{currentAmount.toLocaleString()}</span>
                                 </div>
                             </div>
 
                             <Button onClick={handleAddLine} className="w-full bg-slate-900 text-white hover:bg-slate-800">
-                                <Plus className="h-4 w-4 mr-2" /> Add to Credit Note
+                                <Plus className="h-4 w-4 mr-2" /> Add to Debit Note
                             </Button>
                         </div>
                     </div>
@@ -278,23 +267,21 @@ export function CreateCreditNoteModal({ open, onOpenChange, onSubmit }: CreateCr
                                     <TableHeader>
                                         <TableRow className="bg-slate-50 hover:bg-slate-50">
                                             <TableHead>Item</TableHead>
-                                            <TableHead className="text-right">Net Wt</TableHead>
+                                            <TableHead>Unit</TableHead>
+                                            <TableHead className="text-right">Weight</TableHead>
                                             <TableHead className="text-right">Rate</TableHead>
-                                            <TableHead className="text-right">Ded %</TableHead>
-                                            <TableHead className="text-right font-bold text-slate-900">Total Credit</TableHead>
+                                            <TableHead className="text-right font-bold text-slate-900">Debit Amount</TableHead>
                                             <TableHead className="w-[50px]"></TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
                                         {lines.map((line) => (
                                             <TableRow key={line.id}>
-                                                <TableCell className="font-medium">
-                                                    {line.itemName}
-                                                </TableCell>
-                                                <TableCell className="text-right font-mono">{line.netWeight} {line.unit}</TableCell>
+                                                <TableCell className="font-medium">{line.item}</TableCell>
+                                                <TableCell className="text-slate-500 text-xs uppercase">{line.unit}</TableCell>
+                                                <TableCell className="text-right text-slate-500">{line.weight}</TableCell>
                                                 <TableCell className="text-right">{line.rate}</TableCell>
-                                                <TableCell className="text-right text-rose-500">{line.deductionPercent}%</TableCell>
-                                                <TableCell className="text-right font-medium">{line.creditAmount.toLocaleString()}</TableCell>
+                                                <TableCell className="text-right font-mono font-bold">{line.amount.toLocaleString()}</TableCell>
                                                 <TableCell>
                                                     <Button variant="ghost" size="icon" className="h-8 w-8 text-rose-500 hover:bg-rose-50" onClick={() => removeLine(line.id)}>
                                                         <Trash2 className="h-4 w-4" />
@@ -312,20 +299,20 @@ export function CreateCreditNoteModal({ open, onOpenChange, onSubmit }: CreateCr
                             <div className="grid grid-cols-2 gap-12">
                                 <div className="space-y-4">
                                     <div className="space-y-2">
-                                        <Label>Remarks</Label>
+                                        <Label>Reason / Remarks</Label>
                                         <Textarea
                                             value={remarks}
                                             onChange={(e) => setRemarks(e.target.value)}
-                                            placeholder="Reason..."
+                                            placeholder="Enter reason for return..."
                                             className="bg-white resize-none h-20"
                                         />
                                     </div>
                                 </div>
                                 <div className="space-y-3">
                                     <div className="flex justify-between items-center pt-3 border-t border-slate-200">
-                                        <span className="font-bold text-lg text-rose-900">Total Credit</span>
+                                        <span className="font-bold text-lg text-rose-900">Total Debit</span>
                                         <span className="font-bold text-2xl text-rose-600">
-                                            {totalCreditAmount.toLocaleString()}
+                                            {totalDebit.toLocaleString()}
                                         </span>
                                     </div>
                                 </div>
@@ -337,7 +324,7 @@ export function CreateCreditNoteModal({ open, onOpenChange, onSubmit }: CreateCr
                 <DialogFooter className="p-4 border-t bg-white">
                     <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
                     <Button onClick={handleSubmit} className="bg-rose-600 hover:bg-rose-700 w-40">
-                        <Save className="h-4 w-4 mr-2" /> Approve
+                        <Save className="h-4 w-4 mr-2" /> Save Note
                     </Button>
                 </DialogFooter>
             </DialogContent>

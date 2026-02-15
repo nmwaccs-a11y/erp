@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Search, Plus, FileText, Truck, AlertCircle, ShoppingBag, Share2, Undo2 } from "lucide-react";
 import { useState } from "react";
 import { CreateOrderModal } from "@/components/sales/CreateOrderModal";
-import { GenerateInvoiceModal } from "@/components/sales/GenerateInvoiceModal";
+import { CreateSalesInvoiceModal } from "@/components/sales/CreateSalesInvoiceModal";
 import { DispatchModal } from "@/components/sales/DispatchModal";
 import { CreateCreditNoteModal } from "@/components/sales/CreateCreditNoteModal";
 import { Progress } from "@/components/ui/progress";
@@ -53,12 +53,12 @@ export default function Sales() {
             id: `INV-2026-${102 + invoices.length}`,
             customer: "Gateway Motors", // Mock
             date: "Feb 12",
-            amount: `₨ ${data.grandTotal.toLocaleString()}`,
+            amount: `₨ ${data.totals.finalTotal.toLocaleString()}`,
             status: "Pending"
         };
         setInvoices([newInv, ...invoices]);
 
-        let desc = `Invoice ${newInv.id} generated for ₨ ${data.grandTotal.toLocaleString()}.`;
+        let desc = `Invoice ${newInv.id} generated for ₨ ${data.totals.finalTotal.toLocaleString()}.`;
 
         // Auto Dispatch Logic
         if (data.autoDispatch) {
@@ -126,7 +126,7 @@ export default function Sales() {
 
                 {/* Modals */}
                 <CreateOrderModal open={createOrderOpen} onOpenChange={setCreateOrderOpen} onSubmit={handleCreateOrder} />
-                <GenerateInvoiceModal open={invoiceOpen} onOpenChange={setInvoiceOpen} onSubmit={handleGenerateInvoice} />
+                <CreateSalesInvoiceModal open={invoiceOpen} onOpenChange={setInvoiceOpen} onSubmit={handleGenerateInvoice} />
                 <DispatchModal open={dispatchOpen} onOpenChange={setDispatchOpen} onSubmit={handleDispatch} orderId={selectedOrderId} />
                 <CreateCreditNoteModal open={creditNoteOpen} onOpenChange={setCreditNoteOpen} onSubmit={handleCreditNote} />
 
