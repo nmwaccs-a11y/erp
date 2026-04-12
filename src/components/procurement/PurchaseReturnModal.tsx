@@ -40,6 +40,7 @@ export function PurchaseReturnModal({ open, onOpenChange, onSubmit }: PurchaseRe
 
     // Form Input State
     const [currentItem, setCurrentItem] = useState("");
+    const [currentQuantity, setCurrentQuantity] = useState("");
     const [currentUnit, setCurrentUnit] = useState("kg");
     const [currentWeight, setCurrentWeight] = useState("");
     const [currentRate, setCurrentRate] = useState("");
@@ -56,6 +57,7 @@ export function PurchaseReturnModal({ open, onOpenChange, onSubmit }: PurchaseRe
         const newLine = {
             id: Math.random().toString(36).substr(2, 9),
             item: currentItem,
+            quantity: Number(currentQuantity),
             unit: currentUnit,
             weight: Number(currentWeight),
             rate: Number(currentRate),
@@ -66,6 +68,7 @@ export function PurchaseReturnModal({ open, onOpenChange, onSubmit }: PurchaseRe
 
         // Reset Item Fields but keep Item/Unit for convenience
         setCurrentWeight("");
+        setCurrentQuantity("");
         // setCurrentRate(""); // Rate might be same
 
         setTimeout(() => {
@@ -113,7 +116,7 @@ export function PurchaseReturnModal({ open, onOpenChange, onSubmit }: PurchaseRe
 
                 <div className="flex-1 overflow-hidden grid grid-cols-12">
                     {/* LEFT PANEL: INPUT FORM */}
-                    <div className="col-span-4 bg-slate-50 border-r p-6 overflow-y-auto space-y-6">
+                    <div className="col-span-5 bg-slate-50 border-r p-6 overflow-y-auto space-y-6">
 
                         {/* Header Details */}
                         <div className="space-y-4">
@@ -203,8 +206,18 @@ export function PurchaseReturnModal({ open, onOpenChange, onSubmit }: PurchaseRe
                                 </Select>
                             </div>
 
-                            <div className="grid grid-cols-3 gap-2">
-                                <div className="space-y-2 col-span-1">
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label>Quantity (Nos)</Label>
+                                    <Input
+                                        type="number"
+                                        value={currentQuantity}
+                                        onChange={e => setCurrentQuantity(e.target.value)}
+                                        className="bg-white"
+                                        placeholder="0"
+                                    />
+                                </div>
+                                <div className="space-y-2">
                                     <Label>Unit</Label>
                                     <Select value={currentUnit} onValueChange={setCurrentUnit}>
                                         <SelectTrigger className="bg-white">
@@ -218,7 +231,10 @@ export function PurchaseReturnModal({ open, onOpenChange, onSubmit }: PurchaseRe
                                         </SelectContent>
                                     </Select>
                                 </div>
-                                <div className="space-y-2 col-span-2">
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
                                     <Label>{returnAction === 'stock' ? 'Return Weight' : 'Weight'}</Label>
                                     <Input
                                         type="number"
@@ -228,17 +244,17 @@ export function PurchaseReturnModal({ open, onOpenChange, onSubmit }: PurchaseRe
                                         className="bg-white"
                                     />
                                 </div>
-                            </div>
 
-                            <div className="space-y-2">
-                                <Label>Rate / Cost</Label>
-                                <Input
-                                    type="number"
-                                    value={currentRate}
-                                    onChange={(e) => setCurrentRate(e.target.value)}
-                                    placeholder="0.00"
-                                    className="bg-white"
-                                />
+                                <div className="space-y-2">
+                                    <Label>Rate / Cost</Label>
+                                    <Input
+                                        type="number"
+                                        value={currentRate}
+                                        onChange={(e) => setCurrentRate(e.target.value)}
+                                        placeholder="0.00"
+                                        className="bg-white"
+                                    />
+                                </div>
                             </div>
 
                             <div className="p-3 bg-rose-50/50 rounded-lg border border-rose-100">
@@ -255,7 +271,7 @@ export function PurchaseReturnModal({ open, onOpenChange, onSubmit }: PurchaseRe
                     </div>
 
                     {/* RIGHT PANEL: LIST & TOTALS */}
-                    <div className="col-span-8 flex flex-col h-full bg-white">
+                    <div className="col-span-7 flex flex-col h-full bg-white">
                         <div className="flex-1 overflow-y-auto p-4">
                             {lines.length === 0 ? (
                                 <div className="h-full flex flex-col items-center justify-center text-slate-300">
@@ -267,7 +283,7 @@ export function PurchaseReturnModal({ open, onOpenChange, onSubmit }: PurchaseRe
                                     <TableHeader>
                                         <TableRow className="bg-slate-50 hover:bg-slate-50">
                                             <TableHead>Item</TableHead>
-                                            <TableHead>Unit</TableHead>
+                                            <TableHead className="text-right">Qty</TableHead>
                                             <TableHead className="text-right">Weight</TableHead>
                                             <TableHead className="text-right">Rate</TableHead>
                                             <TableHead className="text-right font-bold text-slate-900">Debit Amount</TableHead>
@@ -277,8 +293,11 @@ export function PurchaseReturnModal({ open, onOpenChange, onSubmit }: PurchaseRe
                                     <TableBody>
                                         {lines.map((line) => (
                                             <TableRow key={line.id}>
-                                                <TableCell className="font-medium">{line.item}</TableCell>
-                                                <TableCell className="text-slate-500 text-xs uppercase">{line.unit}</TableCell>
+                                                <TableCell className="font-medium">
+                                                    {line.item}
+                                                    <span className="text-xs text-slate-400 block">{line.unit}</span>
+                                                </TableCell>
+                                                <TableCell className="text-right text-slate-700">{line.quantity}</TableCell>
                                                 <TableCell className="text-right text-slate-500">{line.weight}</TableCell>
                                                 <TableCell className="text-right">{line.rate}</TableCell>
                                                 <TableCell className="text-right font-mono font-bold">{line.amount.toLocaleString()}</TableCell>

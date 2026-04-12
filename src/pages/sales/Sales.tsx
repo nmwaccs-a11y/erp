@@ -5,7 +5,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Search, Plus, FileText, Truck, AlertCircle, ShoppingBag, Share2, Undo2 } from "lucide-react";
+import { Search, Plus, FileText, Truck, AlertCircle, ShoppingBag, Share2, Undo2, Printer } from "lucide-react";
+import { format } from "date-fns";
 import { useState } from "react";
 import { CreateOrderModal } from "@/components/sales/CreateOrderModal";
 import { CreateSalesInvoiceModal } from "@/components/sales/CreateSalesInvoiceModal";
@@ -13,6 +14,7 @@ import { DispatchModal } from "@/components/sales/DispatchModal";
 import { CreateCreditNoteModal } from "@/components/sales/CreateCreditNoteModal";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/components/ui/use-toast";
+import { PrintOrderSheet } from "@/components/sales/PrintOrderSheet";
 
 export default function Sales() {
     const { toast } = useToast();
@@ -21,11 +23,44 @@ export default function Sales() {
     const [dispatchOpen, setDispatchOpen] = useState(false);
     const [creditNoteOpen, setCreditNoteOpen] = useState(false);
     const [selectedOrderId, setSelectedOrderId] = useState<string | undefined>(undefined);
+    const [printOpen, setPrintOpen] = useState(false);
+    const [selectedPrintOrder, setSelectedPrintOrder] = useState<any>(null);
 
     const [orders, setOrders] = useState([
-        { id: "SO-1001", customer: "Gateway Motors", date: "Feb 10, 2026", status: "In Progress", progress: 60, total: "5000 kg" },
-        { id: "SO-1002", customer: "Alpha Wire Supply", date: "Feb 11, 2026", status: "Pending", progress: 0, total: "2000 kg" },
-        { id: "SO-1003", customer: "Beta Transformers", date: "Feb 12, 2026", status: "Dispatched", progress: 100, total: "1500 kg" },
+        {
+            id: "SO-1001",
+            customer: "Gateway Motors",
+            date: "Feb 10, 2026",
+            status: "In Progress",
+            progress: 60,
+            total: "5000 kg",
+            items: [
+                { item: "Copper Wire 8mm", qty: 3000, rate: 1200 },
+                { item: "Copper Strip 12mm", qty: 2000, rate: 1350 }
+            ]
+        },
+        {
+            id: "SO-1002",
+            customer: "Alpha Wire Supply",
+            date: "Feb 11, 2026",
+            status: "Pending",
+            progress: 0,
+            total: "2000 kg",
+            items: [
+                { item: "Copper Rod 20mm", qty: 2000, rate: 1100 }
+            ]
+        },
+        {
+            id: "SO-1003",
+            customer: "Beta Transformers",
+            date: "Feb 12, 2026",
+            status: "Dispatched",
+            progress: 100,
+            total: "1500 kg",
+            items: [
+                { item: "Copper Wire 8mm", qty: 1500, rate: 1200 }
+            ]
+        },
     ]);
 
     const [invoices, setInvoices] = useState([
@@ -38,10 +73,11 @@ export default function Sales() {
         const newOrder = {
             id: `SO-${1000 + orders.length + 1}`,
             customer: data.customer === "gateway" ? "Gateway Motors" : "Alpha Wire Supply",
-            date: data.deliveryDate,
+            date: data.deliveryDate || format(new Date(), "PP"),
             status: "Pending",
             progress: 0,
-            total: "1000 kg" // Mock
+            total: "1000 kg", // Mock
+            items: data.items // Pass items from modal
         };
         setOrders([newOrder, ...orders]);
         toast({ title: "Order Created", description: `Order ${newOrder.id} successfully created.` });
@@ -100,6 +136,11 @@ export default function Sales() {
         setDispatchOpen(true);
     };
 
+    const handlePrintOrder = (order: any) => {
+        setSelectedPrintOrder(order);
+        setPrintOpen(true);
+    };
+
     return (
         <DashboardLayout>
             <div className="space-y-6">
@@ -129,6 +170,7 @@ export default function Sales() {
                 <CreateSalesInvoiceModal open={invoiceOpen} onOpenChange={setInvoiceOpen} onSubmit={handleGenerateInvoice} />
                 <DispatchModal open={dispatchOpen} onOpenChange={setDispatchOpen} onSubmit={handleDispatch} orderId={selectedOrderId} />
                 <CreateCreditNoteModal open={creditNoteOpen} onOpenChange={setCreditNoteOpen} onSubmit={handleCreditNote} />
+                <PrintOrderSheet open={printOpen} onOpenChange={setPrintOpen} order={selectedPrintOrder} />
 
                 <div className="grid gap-4 md:grid-cols-3">
                     <Card className="shadow-soft border-slate-100 bg-white">
@@ -224,6 +266,9 @@ export default function Sales() {
                                                             Dispatch
                                                         </Button>
                                                     )}
+                                                    <Button size="icon" variant="ghost" onClick={() => handlePrintOrder(order)}>
+                                                        <Printer className="h-4 w-4 text-slate-500" />
+                                                    </Button>
                                                 </TableCell>
                                             </TableRow>
                                         ))}

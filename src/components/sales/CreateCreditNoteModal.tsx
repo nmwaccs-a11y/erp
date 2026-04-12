@@ -48,6 +48,7 @@ export function CreateCreditNoteModal({ open, onOpenChange, onSubmit }: CreateCr
 
     // Form Inputs
     const [currentItem, setCurrentItem] = useState("");
+    const [currentQuantity, setCurrentQuantity] = useState("");
     const [currentUnit, setCurrentUnit] = useState("kg");
     const [currentGross, setCurrentGross] = useState("");
     const [currentTare, setCurrentTare] = useState("");
@@ -84,6 +85,7 @@ export function CreateCreditNoteModal({ open, onOpenChange, onSubmit }: CreateCr
             id: Math.random().toString(36).substr(2, 9),
             itemId: currentItem,
             itemName: itemDetails?.name || "Unknown Item",
+            quantity: Number(currentQuantity),
             unit: currentUnit,
             gross: Number(currentGross),
             tare: Number(currentTare),
@@ -97,6 +99,8 @@ export function CreateCreditNoteModal({ open, onOpenChange, onSubmit }: CreateCr
 
         // Reset Inputs partially
         setCurrentGross("");
+        setCurrentQuantity("");
+        setCurrentTare("");
         // Keep others
 
         setTimeout(() => {
@@ -136,7 +140,7 @@ export function CreateCreditNoteModal({ open, onOpenChange, onSubmit }: CreateCr
 
                 <div className="flex-1 overflow-hidden grid grid-cols-12">
                     {/* LEFT PANEL: INPUT FORM */}
-                    <div className="col-span-4 bg-slate-50 border-r p-6 overflow-y-auto space-y-6">
+                    <div className="col-span-5 bg-slate-50 border-r p-6 overflow-y-auto space-y-6">
 
                         {/* Header Details */}
                         <div className="space-y-4">
@@ -215,6 +219,16 @@ export function CreateCreditNoteModal({ open, onOpenChange, onSubmit }: CreateCr
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
+                                    <Label>Quantity (Nos)</Label>
+                                    <Input
+                                        type="number"
+                                        value={currentQuantity}
+                                        onChange={e => setCurrentQuantity(e.target.value)}
+                                        className="bg-white"
+                                        placeholder="0"
+                                    />
+                                </div>
+                                <div className="space-y-2">
                                     <Label>Unit</Label>
                                     <Select value={currentUnit} onValueChange={setCurrentUnit}>
                                         <SelectTrigger className="bg-white">
@@ -226,6 +240,9 @@ export function CreateCreditNoteModal({ open, onOpenChange, onSubmit }: CreateCr
                                         </SelectContent>
                                     </Select>
                                 </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <Label>Gross Wt</Label>
                                     <Input type="number" value={currentGross} onChange={e => setCurrentGross(e.target.value)} className="bg-white" />
@@ -266,7 +283,7 @@ export function CreateCreditNoteModal({ open, onOpenChange, onSubmit }: CreateCr
                     </div>
 
                     {/* RIGHT PANEL: LIST & TOTALS */}
-                    <div className="col-span-8 flex flex-col h-full bg-white">
+                    <div className="col-span-7 flex flex-col h-full bg-white">
                         <div className="flex-1 overflow-y-auto p-4">
                             {lines.length === 0 ? (
                                 <div className="h-full flex flex-col items-center justify-center text-slate-300">
@@ -278,6 +295,7 @@ export function CreateCreditNoteModal({ open, onOpenChange, onSubmit }: CreateCr
                                     <TableHeader>
                                         <TableRow className="bg-slate-50 hover:bg-slate-50">
                                             <TableHead>Item</TableHead>
+                                            <TableHead className="text-right">Qty</TableHead>
                                             <TableHead className="text-right">Net Wt</TableHead>
                                             <TableHead className="text-right">Rate</TableHead>
                                             <TableHead className="text-right">Ded %</TableHead>
@@ -290,8 +308,10 @@ export function CreateCreditNoteModal({ open, onOpenChange, onSubmit }: CreateCr
                                             <TableRow key={line.id}>
                                                 <TableCell className="font-medium">
                                                     {line.itemName}
+                                                    <span className="text-xs text-slate-400 block">{line.unit}</span>
                                                 </TableCell>
-                                                <TableCell className="text-right font-mono">{line.netWeight} {line.unit}</TableCell>
+                                                <TableCell className="text-right text-slate-700">{line.quantity}</TableCell>
+                                                <TableCell className="text-right font-mono">{line.netWeight}</TableCell>
                                                 <TableCell className="text-right">{line.rate}</TableCell>
                                                 <TableCell className="text-right text-rose-500">{line.deductionPercent}%</TableCell>
                                                 <TableCell className="text-right font-medium">{line.creditAmount.toLocaleString()}</TableCell>

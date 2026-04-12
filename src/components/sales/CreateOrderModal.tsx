@@ -4,7 +4,8 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState } from "react";
-import { CalendarIcon } from "lucide-react";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { CalendarIcon, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -19,10 +20,10 @@ interface CreateOrderModalProps {
 export function CreateOrderModal({ open, onOpenChange, onSubmit }: CreateOrderModalProps) {
     const [customer, setCustomer] = useState("");
     const [date, setDate] = useState<Date>();
-    const [items, setItems] = useState([{ item: "", qty: "" }]);
+    const [items, setItems] = useState([{ item: "", qty: "", rate: "" }]);
 
     const handleAddItem = () => {
-        setItems([...items, { item: "", qty: "" }]);
+        setItems([...items, { item: "", qty: "", rate: "" }]);
     };
 
     const handleItemChange = (index: number, field: string, value: string) => {
@@ -40,19 +41,19 @@ export function CreateOrderModal({ open, onOpenChange, onSubmit }: CreateOrderMo
         });
         onOpenChange(false);
         setCustomer("");
-        setItems([{ item: "", qty: "" }]);
+        setItems([{ item: "", qty: "", rate: "" }]);
     };
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-[600px]">
+            <DialogContent className="sm:max-w-[700px]">
                 <DialogHeader>
                     <DialogTitle>Create Sales Order</DialogTitle>
                     <DialogDescription>
                         Create a new order for a customer.
                     </DialogDescription>
                 </DialogHeader>
-                <div className="grid gap-4 py-4">
+                <div className="grid grid-cols-2 gap-4 py-4">
                     <div className="grid gap-2">
                         <Label>Customer</Label>
                         <Select value={customer} onValueChange={setCustomer}>
@@ -92,33 +93,72 @@ export function CreateOrderModal({ open, onOpenChange, onSubmit }: CreateOrderMo
                         </Popover>
                     </div>
 
-                    <div className="space-y-2">
-                        <Label>Order Items</Label>
-                        {items.map((item, index) => (
-                            <div key={index} className="grid grid-cols-5 gap-2">
-                                <Select value={item.item} onValueChange={(val) => handleItemChange(index, "item", val)}>
-                                    <SelectTrigger className="col-span-3">
-                                        <SelectValue placeholder="Select Item" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="wire-8mm">Copper Wire 8mm</SelectItem>
-                                        <SelectItem value="strip-12">Copper Strip 12mm</SelectItem>
-                                        <SelectItem value="rod-20">Copper Rod 20mm</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                                <Input
-                                    className="col-span-2"
-                                    placeholder="Qty (kg)"
-                                    type="number"
-                                    value={item.qty}
-                                    onChange={(e) => handleItemChange(index, "qty", e.target.value)}
-                                />
-                            </div>
-                        ))}
-                        <Button type="button" variant="outline" size="sm" onClick={handleAddItem} className="mt-2">
-                            + Add Item
-                        </Button>
+                    <div className="border rounded-md col-span-2">
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead className="w-[40%]">Item</TableHead>
+                                    <TableHead>Qty</TableHead>
+                                    <TableHead>Rate</TableHead>
+                                    <TableHead>Amount</TableHead>
+                                    <TableHead className="w-[50px]"></TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {items.map((item, index) => (
+                                    <TableRow key={index}>
+                                        <TableCell>
+                                            <Select value={item.item} onValueChange={(val) => handleItemChange(index, "item", val)}>
+                                                <SelectTrigger className="h-8">
+                                                    <SelectValue placeholder="Select Item" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="wire-8mm">Copper Wire 8mm</SelectItem>
+                                                    <SelectItem value="strip-12">Copper Strip 12mm</SelectItem>
+                                                    <SelectItem value="rod-20">Copper Rod 20mm</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </TableCell>
+                                        <TableCell>
+                                            <Input
+                                                type="number"
+                                                className="h-8"
+                                                placeholder="Qty"
+                                                value={item.qty}
+                                                onChange={(e) => handleItemChange(index, "qty", e.target.value)}
+                                            />
+                                        </TableCell>
+                                        <TableCell>
+                                            <Input
+                                                type="number"
+                                                className="h-8"
+                                                placeholder="Rate"
+                                                value={item.rate}
+                                                onChange={(e) => handleItemChange(index, "rate", e.target.value)}
+                                            />
+                                        </TableCell>
+                                        <TableCell>
+                                            <span className="text-sm font-medium">
+                                                {(Number(item.qty || 0) * Number(item.rate || 0)).toLocaleString()}
+                                            </span>
+                                        </TableCell>
+                                        <TableCell>
+                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-rose-500" onClick={() => {
+                                                const newItems = [...items];
+                                                newItems.splice(index, 1);
+                                                setItems(newItems);
+                                            }}>
+                                                <Trash2 className="h-4 w-4" />
+                                            </Button>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
                     </div>
+                    <Button type="button" variant="outline" size="sm" onClick={handleAddItem} className="mt-2 col-span-2">
+                        + Add Item
+                    </Button>
                 </div>
                 <DialogFooter>
                     <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>

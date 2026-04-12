@@ -10,17 +10,40 @@ import { useState } from "react";
 import { PurchaseInvoiceModal } from "@/components/procurement/PurchaseInvoiceModal";
 import { PurchaseReturnModal } from "@/components/procurement/PurchaseReturnModal";
 import { CreatePOModal } from "@/components/procurement/CreatePOModal";
+import { PrintPOSheet } from "@/components/procurement/PrintPOSheet";
+import { useToast } from "@/components/ui/use-toast";
 
 export default function Purchase() {
+    const { toast } = useToast();
     const [activeTab, setActiveTab] = useState("orders");
     const [invoiceOpen, setInvoiceOpen] = useState(false);
     const [returnOpen, setReturnOpen] = useState(false);
     const [poOpen, setPoOpen] = useState(false);
+    const [printOpen, setPrintOpen] = useState(false);
+    const [selectedPrintOrder, setSelectedPrintOrder] = useState<any>(null);
 
     // Mock Data for POs
-    const [orders, setOrders] = useState([
-        { id: "PO-2026-101", date: "2026-02-15", supplier: "Alpha Wire Supply", items: "Copper Cathode (20T)", amount: 5200000, status: "Open" },
-        { id: "PO-2026-100", date: "2026-02-10", supplier: "Beta Transformers", items: "Mixed Scrap (5T)", amount: 1100000, status: "Partially Recvd" },
+    const [orders, setOrders] = useState<any[]>([
+        {
+            id: "PO-2026-101",
+            date: "2026-02-15",
+            supplier: "Alpha Wire Supply",
+            items: [
+                { item: "Copper Cathode", qty: 20000, rate: 260 }
+            ],
+            amount: 5200000,
+            status: "Open"
+        },
+        {
+            id: "PO-2026-100",
+            date: "2026-02-10",
+            supplier: "Beta Transformers",
+            items: [
+                { item: "Mixed Scrap", qty: 5000, rate: 220 }
+            ],
+            amount: 1100000,
+            status: "Partially Recvd"
+        },
     ]);
 
     // Mock Data for Invoices
@@ -33,6 +56,24 @@ export default function Purchase() {
     const [returns, setReturns] = useState([
         { id: "PR-2026-050", date: "2026-02-12", supplier: "Global Rods", amount: 15000, reason: "Quality Reject", type: "Stock Return" }
     ]);
+
+    const handleCreateOrder = (data: any) => {
+        const newOrder = {
+            id: `PO-2026-${102 + orders.length}`,
+            date: data.date || new Date().toISOString().split('T')[0],
+            supplier: data.vendor === "alpha" ? "Alpha Wire Supply" : "Beta Transformers",
+            items: data.lines,
+            amount: data.lines.reduce((sum: number, line: any) => sum + line.amount, 0),
+            status: "Open"
+        };
+        setOrders([newOrder, ...orders]);
+        toast({ title: "Purchase Order Created", description: `Order ${newOrder.id} successfully created.` });
+    };
+
+    const handlePrintOrder = (order: any) => {
+        setSelectedPrintOrder(order);
+        setPrintOpen(true);
+    };
 
     const handleInvoiceSubmit = (data: any) => {
         setInvoices([{
@@ -86,9 +127,10 @@ export default function Purchase() {
                     </div>
                 </div>
 
-                <CreatePOModal open={poOpen} onOpenChange={setPoOpen} />
+                <CreatePOModal open={poOpen} onOpenChange={setPoOpen} onSubmit={handleCreateOrder} />
                 <PurchaseInvoiceModal open={invoiceOpen} onOpenChange={setInvoiceOpen} onSubmit={handleInvoiceSubmit} />
                 <PurchaseReturnModal open={returnOpen} onOpenChange={setReturnOpen} onSubmit={handleReturnSubmit} />
+                <PrintPOSheet open={printOpen} onOpenChange={setPrintOpen} order={selectedPrintOrder} />
 
                 <Tabs defaultValue="orders" className="space-y-4" onValueChange={setActiveTab}>
                     <TabsList className="bg-slate-100 p-1 w-full sm:w-auto grid grid-cols-3 sm:flex">
@@ -141,7 +183,11 @@ export default function Purchase() {
                                                 <TableCell className="font-mono font-medium text-blue-600">{po.id}</TableCell>
                                                 <TableCell className="text-slate-500">{po.date}</TableCell>
                                                 <TableCell className="font-medium">{po.supplier}</TableCell>
-                                                <TableCell>{po.items}</TableCell>
+                                                <TableCell>
+                                                    {Array.isArray(po.items) ?
+                                                        `${po.items.length} Items` :
+                                                        po.items}
+                                                </TableCell>
                                                 <TableCell>Rs {po.amount.toLocaleString()}</TableCell>
                                                 <TableCell>
                                                     <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
@@ -149,7 +195,9 @@ export default function Purchase() {
                                                     </Badge>
                                                 </TableCell>
                                                 <TableCell className="text-right">
-                                                    <Button variant="ghost" size="sm"><Printer className="h-4 w-4" /></Button>
+                                                    <Button variant="ghost" size="sm" onClick={() => handlePrintOrder(po)}>
+                                                        <Printer className="h-4 w-4" />
+                                                    </Button>
                                                 </TableCell>
                                             </TableRow>
                                         ))}

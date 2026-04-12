@@ -10,10 +10,28 @@ import { useState } from "react";
 interface CreatePOModalProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
+    onSubmit?: (data: any) => void;
 }
 
-export function CreatePOModal({ open, onOpenChange }: CreatePOModalProps) {
+export function CreatePOModal({ open, onOpenChange, onSubmit }: CreatePOModalProps) {
     const [lines, setLines] = useState([{ id: 1, item: "", qty: 0, rate: 0, amount: 0 }]);
+    const [vendor, setVendor] = useState("alpha");
+    const [date, setDate] = useState("");
+
+    const handleSubmit = () => {
+        if (onSubmit) {
+            onSubmit({
+                vendor,
+                date,
+                lines
+            });
+        }
+        onOpenChange(false);
+        // Reset form
+        setLines([{ id: 1, item: "", qty: 0, rate: 0, amount: 0 }]);
+        setVendor("alpha");
+        setDate("");
+    };
 
     const addLine = () => {
         setLines([...lines, { id: lines.length + 1, item: "", qty: 0, rate: 0, amount: 0 }]);
@@ -51,7 +69,7 @@ export function CreatePOModal({ open, onOpenChange }: CreatePOModalProps) {
                 <div className="grid grid-cols-2 gap-4 py-4">
                     <div className="space-y-2">
                         <Label>Vendor</Label>
-                        <Select>
+                        <Select value={vendor} onValueChange={setVendor}>
                             <SelectTrigger>
                                 <SelectValue placeholder="Select Vendor" />
                             </SelectTrigger>
@@ -63,7 +81,7 @@ export function CreatePOModal({ open, onOpenChange }: CreatePOModalProps) {
                     </div>
                     <div className="space-y-2">
                         <Label>Expected Date</Label>
-                        <Input type="date" />
+                        <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
                     </div>
                 </div>
 
@@ -136,7 +154,7 @@ export function CreatePOModal({ open, onOpenChange }: CreatePOModalProps) {
                     <Button variant="outline" className="gap-2">
                         <Printer className="h-4 w-4" /> Save & Print PDF
                     </Button>
-                    <Button className="bg-blue-600 hover:bg-blue-700">Submit Order</Button>
+                    <Button className="bg-blue-600 hover:bg-blue-700" onClick={handleSubmit}>Submit Order</Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>
