@@ -1,4 +1,5 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Anchor } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -17,11 +18,11 @@ export function AddPartyModal({ open, onOpenChange }: AddPartyModalProps) {
     const [phone, setPhone] = useState("");
     const [limit, setLimit] = useState("");
     const [taxRegNo, setTaxRegNo] = useState("");
-    const [openingBal, setOpeningBal] = useState("");
-    const [balType, setBalType] = useState("Debit");
+    const [openingFinBal, setOpeningFinBal] = useState("");
+    const [openingMetalBal, setOpeningMetalBal] = useState("");
 
     const handleSubmit = () => {
-        console.log("Creating party:", { name, type, city, phone, limit, taxRegNo, openingBal, balType });
+        console.log("Creating party:", { name, type, city, phone, limit, taxRegNo, openingFinBal, openingMetalBal });
         onOpenChange(false);
         // Reset
         setName("");
@@ -30,8 +31,8 @@ export function AddPartyModal({ open, onOpenChange }: AddPartyModalProps) {
         setPhone("");
         setLimit("");
         setTaxRegNo("");
-        setOpeningBal("");
-        setBalType("Debit");
+        setOpeningFinBal("");
+        setOpeningMetalBal("");
     };
 
     return (
@@ -69,6 +70,16 @@ export function AddPartyModal({ open, onOpenChange }: AddPartyModalProps) {
                                 <SelectItem value="Both">Both</SelectItem>
                             </SelectContent>
                         </Select>
+                        
+                        <div className="mt-1 flex items-center text-xs font-semibold px-2 py-1.5 rounded-md bg-blue-50 text-blue-700 border border-blue-100">
+                            <Anchor className="h-3 w-3 mr-1.5" />
+                            Auto-Anchored to: 
+                            <span className="ml-1 font-bold">
+                                {type === "Customer" ? "11201 (Accounts Receivable)" : 
+                                 type === "Vendor" ? "21101 (Accounts Payable)" : 
+                                 "21101 (Trade Payables)"}
+                            </span>
+                        </div>
                     </div>
                     <div className="grid gap-2">
                         <Label htmlFor="city">
@@ -104,23 +115,18 @@ export function AddPartyModal({ open, onOpenChange }: AddPartyModalProps) {
                         />
                     </div>
                     <div className="grid gap-2">
-                        <Label>Opening Bal</Label>
-                        <div className="flex gap-2">
+                        <Label>Opening Balances</Label>
+                        <div className="grid grid-cols-2 gap-2">
                             <Input
-                                placeholder="Amount"
+                                placeholder="Fin. Bal (PKR)"
                                 type="number"
-                                value={openingBal} onChange={(e) => setOpeningBal(e.target.value)}
-                                className="flex-1"
+                                value={openingFinBal} onChange={(e) => setOpeningFinBal(e.target.value)}
                             />
-                            <Select value={balType} onValueChange={setBalType}>
-                                <SelectTrigger className="w-[100px]">
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="Debit">Debit</SelectItem>
-                                    <SelectItem value="Credit">Credit</SelectItem>
-                                </SelectContent>
-                            </Select>
+                            <Input
+                                placeholder="Metal Bal (KG)"
+                                type="number"
+                                value={openingMetalBal} onChange={(e) => setOpeningMetalBal(e.target.value)}
+                            />
                         </div>
                     </div>
                     {type !== "Vendor" && (

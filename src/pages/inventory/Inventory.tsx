@@ -8,10 +8,12 @@ import { Input } from "@/components/ui/input";
 import { Search, ArrowRightLeft, Box, AlertCircle, Activity, CheckCircle2 } from "lucide-react";
 import HwalaMap from "@/components/inventory/HwalaMap";
 import { TransferNoteModal } from "@/components/inventory/TransferNoteModal";
+import { VendorSettlementModal } from "@/components/inventory/VendorSettlementModal";
 import { useState } from "react";
 
 export default function Inventory() {
     const [transferOpen, setTransferOpen] = useState(false);
+    const [settlementOpen, setSettlementOpen] = useState(false);
 
     return (
         <DashboardLayout>
@@ -22,6 +24,10 @@ export default function Inventory() {
                         <p className="text-slate-500">Track stock levels, transfers, and virtual locations</p>
                     </div>
                     <div className="flex items-center gap-2">
+                        <Button variant="outline" className="shadow-soft bg-white border-emerald-200 text-emerald-700" onClick={() => setSettlementOpen(true)}>
+                            <CheckCircle2 className="h-4 w-4 mr-2" />
+                            Settle Vendor Batch
+                        </Button>
                         <Button className="bg-blue-600 hover:bg-blue-700 shadow-soft" onClick={() => setTransferOpen(true)}>
                             <ArrowRightLeft className="h-4 w-4 mr-2" />
                             New Transfer
@@ -30,6 +36,7 @@ export default function Inventory() {
                 </div>
 
                 <TransferNoteModal open={transferOpen} onOpenChange={setTransferOpen} />
+                <VendorSettlementModal open={settlementOpen} onOpenChange={setSettlementOpen} />
 
                 <div className="grid gap-4 md:grid-cols-4">
                     <Card className="shadow-soft border-slate-100 bg-white">

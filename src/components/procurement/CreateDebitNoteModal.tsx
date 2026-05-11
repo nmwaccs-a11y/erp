@@ -123,7 +123,7 @@ export function CreateDebitNoteModal({ open, onOpenChange, onSubmit }: CreateDeb
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto flex flex-col">
+            <DialogContent className="max-w-[100vw] w-screen h-screen overflow-y-auto flex flex-col !rounded-none border-0 shadow-none">
                 <DialogHeader className="border-b pb-4 mb-4">
                     <div className="flex items-center justify-between">
                         <div>
@@ -132,7 +132,7 @@ export function CreateDebitNoteModal({ open, onOpenChange, onSubmit }: CreateDeb
                                 Return defective material to supplier and create Outward Gate Pass.
                             </DialogDescription>
                         </div>
-                        <div className="text-right">
+                        <div className="text-right pr-10">
                             <div className="text-xs text-slate-500 uppercase tracking-widest">Return ID</div>
                             <div className="font-mono font-bold text-lg text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100">{returnId}</div>
                         </div>

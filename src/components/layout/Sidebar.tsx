@@ -20,8 +20,10 @@ import {
     Settings,
     TrendingUp,
     ShoppingBag,
+    BookOpen,
     ChevronLeft,
-    ChevronRight
+    ChevronRight,
+    Replace
 } from "lucide-react";
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
@@ -74,10 +76,28 @@ export function Sidebar({ className, isCollapsed = false, onToggle }: SidebarPro
             color: "text-rose-400",
         },
         {
+            label: "Parchi Register",
+            icon: FileText,
+            href: "/parchis",
+            color: "text-orange-300",
+        },
+        {
+            label: "Ledgers",
+            icon: BookOpen,
+            href: "/ledgers",
+            color: "text-cyan-400",
+        },
+        {
             label: "Sales & Dispatch",
             icon: ShoppingBag,
             href: "/sales",
             color: "text-blue-300",
+        },
+        {
+            label: "Scrap",
+            icon: Replace,
+            href: "/scrap",
+            color: "text-sky-400",
         },
         {
             label: "Reports",

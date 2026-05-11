@@ -8,9 +8,12 @@ import Inventory from "./pages/inventory/Inventory";
 import Financials from "./pages/financials/Financials";
 import Sales from "./pages/sales/Sales";
 import Reports from "./pages/reports/Reports";
+import UnifiedLedgers from "./pages/reports/UnifiedLedgers";
+import ParchiRegister from "./pages/financials/ParchiRegister";
 import Alerts from "./pages/alerts/Alerts";
 import SystemAudit from "./pages/admin/SystemAudit";
 import MarketIntelligence from "./pages/market/MarketIntelligence";
+import TriangleTrade from "./pages/trading/TriangleTrade";
 import Login from "./pages/auth/Login";
 import TwoFactor from "./pages/auth/TwoFactor";
 import ForgotPassword from "./pages/auth/ForgotPassword";
@@ -21,7 +24,9 @@ import ChartOfAccounts from "./pages/masters/ChartOfAccounts";
 import ItemMaster from "./pages/masters/ItemMaster";
 import PartyMaster from "./pages/masters/PartyMaster";
 import LaborRateMatrix from "./pages/masters/LaborRateMatrix";
+import WattaMaster from "./pages/masters/WattaMaster";
 import RateManagement from "./pages/ratemanagement/RateManagement";
+import UnifiedPartyDashboard from "./pages/masters/UnifiedPartyDashboard";
 
 function App() {
   return (
@@ -38,7 +43,9 @@ function App() {
         <Route path="/masters/coa" element={<ChartOfAccounts />} />
         <Route path="/masters/items" element={<ItemMaster />} />
         <Route path="/masters/parties" element={<PartyMaster />} />
+        <Route path="/masters/parties/:id" element={<UnifiedPartyDashboard />} />
         <Route path="/masters/labor-rates" element={<LaborRateMatrix />} />
+        <Route path="/masters/watta" element={<WattaMaster />} />
 
         {/* Transaction Routes */}
         <Route path="/" element={<Navigate to="/auth/login" replace />} />
@@ -51,10 +58,13 @@ function App() {
         <Route path="/inventory" element={<Inventory />} />
         <Route path="/sales" element={<Sales />} />
         <Route path="/financials" element={<Financials />} />
+        <Route path="/parchis" element={<ParchiRegister />} />
+        <Route path="/ledgers" element={<UnifiedLedgers />} />
         <Route path="/reports" element={<Reports />} />
         <Route path="/alerts" element={<Alerts />} />
         <Route path="/audit" element={<SystemAudit />} />
         <Route path="/market" element={<MarketIntelligence />} />
+        <Route path="/scrap" element={<TriangleTrade />} />
       </Routes>
     </Router>
   );

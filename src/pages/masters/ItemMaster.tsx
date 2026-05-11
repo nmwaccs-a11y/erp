@@ -12,11 +12,11 @@ export default function ItemMaster() {
     const [isAddOpen, setIsAddOpen] = useState(false);
 
     const items = [
-        { code: "RAW-001", name: "Copper Cathode", category: "Raw Material", unit: "kg", cost: "Pending" },
-        { code: "WIP-102", name: "Copper Rod 8mm", category: "WIP", unit: "kg", cost: "$8.50" },
-        { code: "WIP-105", name: "Copper Wire 2.5mm", category: "WIP", unit: "kg", cost: "$9.20" },
-        { code: "FIN-201", name: "Enamel Wire 18 SWG", category: "Finish Goods", unit: "Reel", cost: "$12.00" },
-        { code: "SCR-300", name: "Bare Copper Scrap", category: "Scrap", unit: "kg", cost: "$7.50" },
+        { code: "RAW-001", name: "Copper Cathode", category: "Raw Material", unit: "KG", cost: "Pending" },
+        { code: "WIP-102", name: "Copper Rod 8mm", category: "WIP", unit: "KG", cost: "$8.50" },
+        { code: "WIP-105", name: "Copper Wire 2.5mm", category: "WIP", unit: "KG", cost: "$9.20" },
+        { code: "FIN-201", name: "Enamel Wire 18 SWG", category: "Finish Goods", unit: "Piece", cost: "$12.00" },
+        { code: "SCR-300", name: "Bare Copper Scrap", category: "Scrap", unit: "KG", cost: "$7.50" },
         { code: "CHM-401", name: "Varnish Drum (Hysol)", category: "Chemical", unit: "Drum", cost: "$250.00" },
     ];
 

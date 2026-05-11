@@ -100,14 +100,14 @@ export function PurchaseReturnModal({ open, onOpenChange, onSubmit }: PurchaseRe
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-6xl h-[90vh] flex flex-col p-0 gap-0">
+            <DialogContent className="max-w-[100vw] w-screen h-screen flex flex-col p-0 gap-0 !rounded-none border-0 shadow-none">
                 <DialogHeader className="px-6 py-4 border-b">
                     <div className="flex items-center justify-between">
                         <div>
                             <DialogTitle className="text-xl">Purchase Return (Debit Note)</DialogTitle>
                             <DialogDescription>Return stock or adjust financial liability.</DialogDescription>
                         </div>
-                        <div className="text-right">
+                        <div className="text-right pr-10">
                             <div className="text-xs text-slate-500 uppercase tracking-widest">Return ID</div>
                             <div className="font-mono font-bold text-lg text-rose-600 bg-rose-50 px-2 py-0.5 rounded border border-rose-100">{returnId}</div>
                         </div>

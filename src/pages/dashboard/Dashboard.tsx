@@ -162,6 +162,42 @@ export default function Dashboard() {
                                 </div>
                             </CardContent>
                         </Card>
+                        {/* Top Parties Exposure Widget */}
+                        <Card className="shadow-sm border-slate-200">
+                            <CardHeader>
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <CardTitle className="text-slate-900">Top Parties Exposure</CardTitle>
+                                        <CardDescription>Financial vs Metal Khata (Dual-Ledger)</CardDescription>
+                                    </div>
+                                    <Button variant="outline" size="sm" className="h-8">View All</Button>
+                                </div>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="flex items-center justify-between p-3 bg-slate-50 rounded border border-slate-100">
+                                        <div>
+                                            <p className="text-sm font-semibold text-slate-900">Alpha Cables (CUST)</p>
+                                            <p className="text-xs text-slate-500">Limit: 500k PKR</p>
+                                        </div>
+                                        <div className="text-right">
+                                            <p className="text-sm font-bold text-rose-600">Fin: -120,000</p>
+                                            <p className="text-xs font-mono font-bold text-blue-600">Metal: +50 KG</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center justify-between p-3 bg-slate-50 rounded border border-slate-100">
+                                        <div>
+                                            <p className="text-sm font-semibold text-slate-900">Gamma Scrap (VEND)</p>
+                                            <p className="text-xs text-slate-500">Informal Parchi limit</p>
+                                        </div>
+                                        <div className="text-right">
+                                            <p className="text-sm font-bold text-emerald-600">Fin: +45,000</p>
+                                            <p className="text-xs font-mono font-bold text-rose-600">Metal: -120 KG</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
                     </div>
 
                     {/* RIGHT COLUMN (Market & Alerts) */}

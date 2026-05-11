@@ -14,7 +14,7 @@ export function AddItemModal({ open, onOpenChange }: AddItemModalProps) {
     const [code, setCode] = useState("");
     const [name, setName] = useState("");
     const [category, setCategory] = useState("Raw Material");
-    const [unit, setUnit] = useState("kg");
+    const [unit, setUnit] = useState("KG");
     const [cost, setCost] = useState("");
     const [openingQty, setOpeningQty] = useState("");
     const [openingRate, setOpeningRate] = useState("");
@@ -34,7 +34,7 @@ export function AddItemModal({ open, onOpenChange }: AddItemModalProps) {
         setCode("");
         setName("");
         setCategory("Raw Material");
-        setUnit("kg");
+        setUnit("KG");
         setCost("");
         setOpeningQty("");
         setOpeningRate("");
@@ -102,11 +102,9 @@ export function AddItemModal({ open, onOpenChange }: AddItemModalProps) {
                                 <SelectValue placeholder="Select unit" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="kg">Kilogram (kg)</SelectItem>
-                                <SelectItem value="mtr">Meter (mtr)</SelectItem>
-                                <SelectItem value="pcs">Pieces (pcs)</SelectItem>
-                                <SelectItem value="drum">Drum</SelectItem>
-                                <SelectItem value="roll">Roll</SelectItem>
+                                <SelectItem value="KG">Kilogram (KG)</SelectItem>
+                                <SelectItem value="Drum">Drum</SelectItem>
+                                <SelectItem value="Piece">Piece</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>

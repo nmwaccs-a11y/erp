@@ -10,11 +10,11 @@ export default function PartyMaster() {
     const [isAddOpen, setIsAddOpen] = useState(false);
 
     const parties = [
-        { id: "P-001", name: "Alpha Cables Pvt Ltd", type: "Customer", city: "Lahore", creditUsed: 80, limit: 500000 },
-        { id: "P-002", name: "Beta Transformers", type: "Customer", city: "Gujranwala", creditUsed: 20, limit: 1000000 },
-        { id: "V-001", name: "Gamma Scrap Traders", type: "Vendor", city: "Sialkot", creditUsed: 0, limit: 0 },
-        { id: "V-002", name: "Delta Copper Imports", type: "Vendor", city: "Karachi", creditUsed: 0, limit: 0 },
-        { id: "P-003", name: "Echo Electronics", type: "Both", city: "Lahore", creditUsed: 45, limit: 200000 },
+        { id: "P-001", name: "Alpha Cables Pvt Ltd", type: "Customer", city: "Lahore", creditUsed: 80, limit: 500000, finBal: 120000, metalBal: -50 },
+        { id: "P-002", name: "Beta Transformers", type: "Customer", city: "Gujranwala", creditUsed: 20, limit: 1000000, finBal: -50000, metalBal: 1200 },
+        { id: "V-001", name: "Gamma Scrap Traders", type: "Vendor", city: "Sialkot", creditUsed: 0, limit: 0, finBal: 0, metalBal: 0 },
+        { id: "V-002", name: "Delta Copper Imports", type: "Vendor", city: "Karachi", creditUsed: 0, limit: 0, finBal: -200000, metalBal: 0 },
+        { id: "P-003", name: "Echo Electronics", type: "Both", city: "Lahore", creditUsed: 45, limit: 200000, finBal: 15000, metalBal: 10 },
     ];
 
     return (
@@ -61,6 +61,21 @@ export default function PartyMaster() {
                                     <div className="flex items-center gap-2 text-sm text-slate-600">
                                         <Phone className="h-4 w-4 text-slate-400" />
                                         <span>+92 300 1234567</span>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-2 text-xs text-slate-600 bg-slate-50 p-2 rounded-md">
+                                        <div>
+                                            <div className="text-slate-400">Fin. Bal (PKR)</div>
+                                            <div className={`font-semibold ${party.finBal < 0 ? 'text-rose-600' : 'text-emerald-600'}`}>
+                                                {party.finBal.toLocaleString()}
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div className="text-slate-400">Metal Bal (KG)</div>
+                                            <div className={`font-semibold ${party.metalBal < 0 ? 'text-rose-600' : 'text-blue-600'}`}>
+                                                {party.metalBal}
+                                            </div>
+                                        </div>
                                     </div>
 
                                     {party.type !== "Vendor" && (

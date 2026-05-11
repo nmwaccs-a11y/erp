@@ -9,15 +9,25 @@ import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useState, useEffect, useRef } from "react";
-import { AlertCircle, CalendarIcon, Plus, Trash2, Calculator, Save, ShoppingBag } from "lucide-react";
+import { AlertCircle, CalendarIcon, Plus, Trash2, Calculator, Save, ShoppingBag, ArrowDownToLine } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+
+interface PendingOrder {
+    id: string;
+    customer: string;
+    customerId: string;
+    total_ordered_qty: number;
+    total_fulfilled_qty: number;
+    items: { item: string; gauge?: string; qty: number; rate: number; wattaRate?: number }[];
+}
 
 interface CreateSalesInvoiceModalProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     onSubmit: (data: any) => void;
+    pendingOrders?: PendingOrder[];
 }
 
 // Mock Data
@@ -33,7 +43,7 @@ const ITEMS = [
     { id: "ITM-003", name: "Paper Covered Wire", defaultTare: 1.2, unit: "kg" },
 ];
 
-export function CreateSalesInvoiceModal({ open, onOpenChange, onSubmit }: CreateSalesInvoiceModalProps) {
+export function CreateSalesInvoiceModal({ open, onOpenChange, onSubmit, pendingOrders = [] }: CreateSalesInvoiceModalProps) {
     // Header State
     const [invoiceId] = useState(`INV-${new Date().getFullYear()}-${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`);
     const [date, setDate] = useState<Date | undefined>(new Date());
@@ -43,6 +53,10 @@ export function CreateSalesInvoiceModal({ open, onOpenChange, onSubmit }: Create
     const [driverName, setDriverName] = useState("");
     const [refScrapRate, setRefScrapRate] = useState("");
     const [remarks, setRemarks] = useState("");
+
+    // Order Linking State (Pull Mechanism)
+    const [linkedOrderId, setLinkedOrderId] = useState<string | null>(null);
+    const [showPullModal, setShowPullModal] = useState(false);
 
     // Line Item State
     const [lines, setLines] = useState<any[]>([]);
@@ -56,6 +70,8 @@ export function CreateSalesInvoiceModal({ open, onOpenChange, onSubmit }: Create
     const [currentBatch, setCurrentBatch] = useState("");
     const [currentGross, setCurrentGross] = useState("");
     const [currentTare, setCurrentTare] = useState("");
+    const [currentGauge, setCurrentGauge] = useState("");
+    const [currentWattaRate, setCurrentWattaRate] = useState("");
     const [currentRate, setCurrentRate] = useState("");
 
     // Footer State
@@ -64,7 +80,8 @@ export function CreateSalesInvoiceModal({ open, onOpenChange, onSubmit }: Create
 
     // Calculated Input Fields
     const currentNet = Math.max(0, Number(currentGross) - Number(currentTare));
-    const currentAmount = currentNet * Number(currentRate);
+    const effectiveRate = saleMode === "premium" ? (Number(refScrapRate) + Number(currentWattaRate)) : Number(currentRate);
+    const currentAmount = currentNet * effectiveRate;
 
     // Calculated Footer Fields
     const totalNetWeight = lines.reduce((sum, line) => sum + line.netWeight, 0);
@@ -74,9 +91,39 @@ export function CreateSalesInvoiceModal({ open, onOpenChange, onSubmit }: Create
     const taxAmount = (subtotal - numDiscount) * (numTaxRate / 100);
     const finalTotal = subtotal - numDiscount + taxAmount;
 
-    // Derived State
     const selectedCustomer = CUSTOMERS.find(c => c.id === customerId);
     const isOverLimit = selectedCustomer ? (selectedCustomer.currentBalance + finalTotal > selectedCustomer.creditLimit) : false;
+
+    // Pending orders for the selected customer
+    const customerPendingOrders = pendingOrders.filter(o => o.customerId === customerId);
+    const linkedOrder = pendingOrders.find(o => o.id === linkedOrderId);
+
+    // Pull from Order — auto-fill lines from selected SO
+    const handlePullOrder = (orderId: string) => {
+        const order = pendingOrders.find(o => o.id === orderId);
+        if (!order) return;
+        setLinkedOrderId(orderId);
+        setSaleMode("premium");
+        // Auto-fill line items from the order
+        const autoLines = order.items.map(item => ({
+            id: Math.random().toString(36).substr(2, 9),
+            itemId: "",
+            itemName: item.item,
+            quantity: 1,
+            unit: "kg",
+            batchNo: "",
+            gross: 0,
+            tare: 0,
+            netWeight: 0,
+            gauge: item.gauge || "",
+            wattaRate: item.wattaRate || 0,
+            rate: item.rate,
+            amount: 0,
+            orderedQty: item.qty,
+        }));
+        setLines(autoLines);
+        setShowPullModal(false);
+    };
 
     // Effects
     useEffect(() => {
@@ -85,9 +132,12 @@ export function CreateSalesInvoiceModal({ open, onOpenChange, onSubmit }: Create
             if (item) {
                 setCurrentTare(item.defaultTare.toString());
                 setCurrentUnit(item.unit || "kg");
+                if (saleMode === "premium") {
+                    setCurrentWattaRate("513"); // Mock auto-fetch based on rules
+                }
             }
         }
-    }, [currentItem]);
+    }, [currentItem, saleMode]);
 
 
     const handleAddLine = () => {
@@ -107,7 +157,9 @@ export function CreateSalesInvoiceModal({ open, onOpenChange, onSubmit }: Create
             gross: Number(currentGross),
             tare: Number(currentTare),
             netWeight: currentNet,
-            rate: Number(currentRate),
+            gauge: currentGauge,
+            wattaRate: saleMode === "premium" ? Number(currentWattaRate) : 0,
+            rate: effectiveRate,
             amount: currentAmount
         };
 
@@ -137,7 +189,8 @@ export function CreateSalesInvoiceModal({ open, onOpenChange, onSubmit }: Create
                 vehicleNo,
                 driverName,
                 refScrapRate: saleMode === "premium" ? refScrapRate : null,
-                remarks
+                remarks,
+                linkedOrderId,
             },
             items: lines,
             totals: {
@@ -154,18 +207,19 @@ export function CreateSalesInvoiceModal({ open, onOpenChange, onSubmit }: Create
         setLines([]);
         setCustomerId("");
         setDiscount("");
+        setLinkedOrderId(null);
     };
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-7xl h-[95vh] flex flex-col p-0 gap-0">
+            <DialogContent className="max-w-[100vw] w-screen h-screen flex flex-col p-0 gap-0 !rounded-none border-0 shadow-none">
                 <DialogHeader className="px-6 py-4 border-b">
                     <div className="flex items-center justify-between">
                         <div>
                             <DialogTitle className="text-xl">Generate Sales Invoice</DialogTitle>
                             <DialogDescription>Create a commercial invoice and gate pass.</DialogDescription>
                         </div>
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-4 pr-10">
                             {isOverLimit && (
                                 <div className="flex items-center gap-2 bg-rose-50 px-3 py-1 rounded-full border border-rose-200">
                                     <AlertCircle className="h-4 w-4 text-rose-600" />
@@ -180,16 +234,16 @@ export function CreateSalesInvoiceModal({ open, onOpenChange, onSubmit }: Create
                     </div>
                 </DialogHeader>
 
-                <div className="flex-1 overflow-hidden grid grid-cols-12">
+                <div className="flex-1 overflow-hidden grid grid-cols-12 bg-slate-50">
                     {/* LEFT PANEL: INPUT FORM */}
-                    <div className="col-span-5 bg-slate-50 border-r p-6 overflow-y-auto space-y-6">
+                    <div className="col-span-5 bg-white border-r p-6 overflow-y-auto space-y-6 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:bg-slate-200 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-transparent shadow-[10px_0_15px_-3px_rgba(0,0,0,0.02)] z-10">
                         {/* Header Details */}
-                        <div className="space-y-4">
-                            <h3 className="font-semibold text-slate-900 flex items-center gap-2">
-                                <AlertCircle className="h-4 w-4" /> Header Details
+                        <div className="space-y-5 bg-slate-50/50 p-5 rounded-xl border border-slate-100">
+                            <h3 className="font-bold text-slate-700 flex items-center gap-2 uppercase tracking-widest text-xs border-b border-slate-200 pb-2">
+                                <AlertCircle className="h-4 w-4 text-blue-500" /> Header Details
                             </h3>
 
-                            <div className="grid gap-4">
+                            <div className="grid gap-5">
                                 <div className="space-y-2">
                                     <Label>Customer</Label>
                                     <Select value={customerId} onValueChange={setCustomerId}>
@@ -205,6 +259,65 @@ export function CreateSalesInvoiceModal({ open, onOpenChange, onSubmit }: Create
                                         </SelectContent>
                                     </Select>
                                 </div>
+
+                                {/* PULL FROM ORDER ALERT */}
+                                {customerId && customerPendingOrders.length > 0 && !linkedOrderId && (
+                                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 animate-in fade-in slide-in-from-top-2">
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <ArrowDownToLine className="h-4 w-4 text-blue-600" />
+                                                <span className="text-xs font-semibold text-blue-800">
+                                                    {customerPendingOrders.length} pending order(s) found!
+                                                </span>
+                                            </div>
+                                            <Button size="sm" variant="outline" className="h-7 text-xs bg-white border-blue-300 text-blue-700 hover:bg-blue-50" onClick={() => setShowPullModal(true)}>
+                                                Pull from Order
+                                            </Button>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {linkedOrderId && (
+                                    <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-2.5 flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                            <ArrowDownToLine className="h-4 w-4 text-emerald-600" />
+                                            <span className="text-xs font-bold text-emerald-800">Linked: {linkedOrderId}</span>
+                                            <span className="text-[10px] text-emerald-600">(Remaining: {linkedOrder ? (linkedOrder.total_ordered_qty - linkedOrder.total_fulfilled_qty).toLocaleString() : 0} kg)</span>
+                                        </div>
+                                        <Button size="sm" variant="ghost" className="h-6 text-[10px] text-slate-500" onClick={() => { setLinkedOrderId(null); setLines([]); }}>Unlink</Button>
+                                    </div>
+                                )}
+
+                                {/* Pull from Order Modal */}
+                                {showPullModal && (
+                                    <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center" onClick={() => setShowPullModal(false)}>
+                                        <div className="bg-white rounded-lg shadow-lg p-6 w-[500px] max-h-[60vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+                                            <h3 className="text-lg font-bold text-slate-900 mb-3">Pull from Pending Sales Order</h3>
+                                            <p className="text-xs text-slate-500 mb-4">Select an order to auto-fill this invoice. You will still weigh the actual drums.</p>
+                                            <div className="space-y-2">
+                                                {customerPendingOrders.map(o => (
+                                                    <div key={o.id} className="border border-slate-200 rounded-lg p-3 hover:border-blue-300 hover:bg-blue-50/30 cursor-pointer transition-colors" onClick={() => handlePullOrder(o.id)}>
+                                                        <div className="flex items-center justify-between">
+                                                            <div>
+                                                                <span className="font-mono font-bold text-blue-700">{o.id}</span>
+                                                                <span className="text-xs text-slate-500 ml-2">{o.items.length} item(s)</span>
+                                                            </div>
+                                                            <div className="text-right text-xs">
+                                                                <div className="font-semibold text-slate-800">Ordered: {o.total_ordered_qty.toLocaleString()} kg</div>
+                                                                <div className="text-emerald-600">Fulfilled: {o.total_fulfilled_qty.toLocaleString()} kg</div>
+                                                                <div className="text-blue-700 font-bold">Remaining: {(o.total_ordered_qty - o.total_fulfilled_qty).toLocaleString()} kg</div>
+                                                            </div>
+                                                        </div>
+                                                        <div className="mt-2 text-[10px] text-slate-500">
+                                                            {o.items.map(i => `${i.item} (${i.qty} kg)`).join(" • ")}
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                            <Button variant="outline" className="w-full mt-4" onClick={() => setShowPullModal(false)}>Cancel</Button>
+                                        </div>
+                                    </div>
+                                )}
 
                                 <div className="space-y-2">
                                     <Label>Date</Label>
@@ -238,6 +351,12 @@ export function CreateSalesInvoiceModal({ open, onOpenChange, onSubmit }: Create
                                         </button>
                                     </div>
                                 </div>
+                                {saleMode === "premium" && (
+                                    <div className="space-y-2">
+                                        <Label>Reference Scrap Rate</Label>
+                                        <Input type="number" placeholder="0.00" className="bg-white" value={refScrapRate} onChange={e => setRefScrapRate(e.target.value)} />
+                                    </div>
+                                )}
 
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-2">
@@ -254,14 +373,15 @@ export function CreateSalesInvoiceModal({ open, onOpenChange, onSubmit }: Create
 
                         <div className="h-px bg-slate-200" />
 
-                        {/* Item Entry */}
-                        <div className="space-y-4">
-                            <h3 className="font-semibold text-slate-900 flex items-center gap-2">
-                                <Plus className="h-4 w-4" /> Add Item
+                        {/* Line Item Entry */}
+                        <div className="bg-[#fffdf5] p-5 rounded-xl border border-[#e5e0d8] shadow-sm space-y-5 relative overflow-hidden">
+                            <div className="absolute top-0 left-0 bottom-0 w-1 bg-amber-500"></div>
+                            <h3 className="font-bold text-amber-900 flex items-center gap-2 uppercase tracking-widest text-xs border-b border-amber-200/60 pb-2">
+                                <Plus className="h-4 w-4 text-amber-600" /> Add Line Item
                             </h3>
 
                             <div className="space-y-2">
-                                <Label>Item</Label>
+                                <Label className="uppercase tracking-widest text-[10px] font-bold text-slate-500">Item</Label>
                                 <Select value={currentItem} onValueChange={setCurrentItem}>
                                     <SelectTrigger ref={itemSelectRef} className="bg-white">
                                         <SelectValue placeholder="Select Item" />
@@ -278,13 +398,13 @@ export function CreateSalesInvoiceModal({ open, onOpenChange, onSubmit }: Create
                                     <Input value={currentBatch} onChange={e => setCurrentBatch(e.target.value)} className="bg-white font-mono" placeholder="BATCH-001" />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label>Quantity (Nos)</Label>
+                                    <Label>Gauge / Spec</Label>
                                     <Input
                                         type="number"
-                                        value={currentQuantity}
-                                        onChange={e => setCurrentQuantity(e.target.value)}
+                                        value={currentGauge}
+                                        onChange={e => setCurrentGauge(e.target.value)}
                                         className="bg-white"
-                                        placeholder="0"
+                                        placeholder="e.g. 28"
                                     />
                                 </div>
                             </div>
@@ -330,13 +450,14 @@ export function CreateSalesInvoiceModal({ open, onOpenChange, onSubmit }: Create
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label>{saleMode === 'direct' ? 'Rate' : 'Making Charges'}</Label>
+                                    <Label>{saleMode === 'direct' ? 'Final Rate' : 'Watta Rate (Pre-fetched)'}</Label>
                                     <Input
                                         type="number"
-                                        value={currentRate}
-                                        onChange={(e) => setCurrentRate(e.target.value)}
+                                        value={saleMode === "direct" ? currentRate : currentWattaRate}
+                                        onChange={(e) => saleMode === "direct" ? setCurrentRate(e.target.value) : setCurrentWattaRate(e.target.value)}
                                         className="bg-white"
                                         placeholder="0.00"
+                                        disabled={saleMode === "premium"}
                                     />
                                 </div>
                             </div>
@@ -359,12 +480,13 @@ export function CreateSalesInvoiceModal({ open, onOpenChange, onSubmit }: Create
                     </div>
 
                     {/* RIGHT PANEL: LIST & TOTALS */}
-                    <div className="col-span-7 flex flex-col h-full bg-white">
-                        <div className="flex-1 overflow-y-auto p-4">
+                    <div className="col-span-7 flex flex-col h-full bg-[#f8f9fa]">
+                        <div className="flex-1 overflow-y-auto p-6 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:bg-slate-200 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-transparent">
                             {lines.length === 0 ? (
-                                <div className="h-full flex flex-col items-center justify-center text-slate-300">
-                                    <ShoppingBag className="h-12 w-12 mb-2 opacity-20" />
-                                    <p>No items added yet</p>
+                                <div className="h-full flex flex-col items-center justify-center text-slate-400">
+                                    <ShoppingBag className="h-16 w-16 mb-4 opacity-20" />
+                                    <p className="text-lg font-medium">No items added yet</p>
+                                    <p className="text-sm">Select items from the left panel to build your invoice.</p>
                                 </div>
                             ) : (
                                 <Table>
@@ -372,7 +494,7 @@ export function CreateSalesInvoiceModal({ open, onOpenChange, onSubmit }: Create
                                         <TableRow className="bg-slate-50 hover:bg-slate-50">
                                             <TableHead>Item</TableHead>
                                             <TableHead>Batch</TableHead>
-                                            <TableHead className="text-right">Qty</TableHead>
+                                            <TableHead>Gauge</TableHead>
                                             <TableHead className="text-right">Gross</TableHead>
                                             <TableHead className="text-right">Tare</TableHead>
                                             <TableHead className="text-right font-bold text-slate-900">Net</TableHead>
@@ -389,7 +511,7 @@ export function CreateSalesInvoiceModal({ open, onOpenChange, onSubmit }: Create
                                                     <span className="text-xs text-slate-400 block">{line.unit}</span>
                                                 </TableCell>
                                                 <TableCell className="font-mono text-xs">{line.batchNo}</TableCell>
-                                                <TableCell className="text-right text-slate-700">{line.quantity}</TableCell>
+                                                <TableCell className="text-slate-700">{line.gauge}</TableCell>
                                                 <TableCell className="text-right text-slate-500">{line.gross}</TableCell>
                                                 <TableCell className="text-right text-slate-500">{line.tare}</TableCell>
                                                 <TableCell className="text-right font-mono font-bold">{line.netWeight}</TableCell>
