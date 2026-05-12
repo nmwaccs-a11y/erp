@@ -160,25 +160,28 @@ export function Sidebar({ className, isCollapsed = false, onToggle }: SidebarPro
                         <Button
                             variant="ghost"
                             className={cn(
-                                "w-full font-medium transition-all duration-300 ease-in-out mb-1",
-                                isCollapsed ? "justify-center px-2" : "justify-start px-3",
+                                "w-full font-medium transition-all duration-300 ease-in-out mb-0.5 rounded-lg relative",
+                                isCollapsed ? "justify-center px-2 h-10" : "justify-start px-3 h-9",
                                 location.pathname === route.href
-                                    ? "bg-white text-slate-900 shadow-md hover:bg-white hover:text-slate-900 translate-x-1"
-                                    : "text-blue-100 hover:bg-blue-900 hover:text-white hover:translate-x-1"
+                                    ? "bg-white/15 text-white shadow-[0_0_12px_rgba(255,255,255,0.06)] hover:bg-white/15 hover:text-white backdrop-blur-sm border border-white/10"
+                                    : "text-white/60 hover:bg-white/8 hover:text-white/90"
                             )}
                         >
+                            {location.pathname === route.href && (
+                                <div className={cn("absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-4 rounded-r-full", route.color?.replace('text-', 'bg-') || 'bg-blue-400')} />
+                            )}
                             <route.icon
                                 className={cn(
-                                    "h-5 w-5 shrink-0 transition-colors duration-300",
-                                    location.pathname === route.href ? "text-slate-900" : "text-white",
+                                    "h-4 w-4 shrink-0 transition-all duration-300",
+                                    location.pathname === route.href ? route.color || "text-white" : "text-white/50",
                                     isCollapsed ? "mr-0" : "mr-3"
                                 )}
                             />
-                            {!isCollapsed && <span>{route.label}</span>}
+                            {!isCollapsed && <span className="text-[13px]">{route.label}</span>}
                         </Button>
                     </TooltipTrigger>
                     {isCollapsed && (
-                        <TooltipContent side="right" className="bg-slate-900 text-white border-slate-800">
+                        <TooltipContent side="right" className="bg-slate-900/95 text-white border-white/10 backdrop-blur-md shadow-xl">
                             {route.label}
                         </TooltipContent>
                     )}
@@ -192,61 +195,76 @@ export function Sidebar({ className, isCollapsed = false, onToggle }: SidebarPro
             {/* Desktop Sidebar */}
             <div
                 className={cn(
-                    "hidden md:flex flex-col fixed left-0 top-0 bottom-0 z-40 bg-blue-950 border-r border-blue-900 transition-all duration-300 ease-in-out",
-                    isCollapsed ? "w-16" : "w-64",
+                    "hidden md:flex flex-col fixed left-0 top-0 bottom-0 z-40 border-r border-white/[0.06] transition-all duration-300 ease-in-out",
+                    isCollapsed ? "w-16" : "w-60",
                     className
                 )}
+                style={{
+                    background: "linear-gradient(180deg, rgba(15,23,42,0.97) 0%, rgba(15,23,42,0.92) 50%, rgba(15,23,42,0.97) 100%)",
+                    backdropFilter: "blur(20px) saturate(1.8)",
+                    WebkitBackdropFilter: "blur(20px) saturate(1.8)",
+                }}
             >
-                <div className={cn("flex items-center h-16 shrink-0", isCollapsed ? "justify-center" : "px-4")}>
-                    <Zap className="h-6 w-6 text-white shrink-0" />
+                {/* Logo */}
+                <div className={cn("flex items-center h-14 shrink-0 border-b border-white/[0.06]", isCollapsed ? "justify-center" : "px-4")}>
+                    <div className="relative">
+                        <Zap className="h-5 w-5 text-blue-400 shrink-0" />
+                        <div className="absolute inset-0 blur-md bg-blue-400/30 rounded-full" />
+                    </div>
                     {!isCollapsed && (
-                        <h2 className="ml-2 text-lg font-bold tracking-tight text-white whitespace-nowrap">
+                        <h2 className="ml-2.5 text-sm font-bold tracking-tight text-white/90 whitespace-nowrap">
                             CopperSync
                         </h2>
                     )}
                 </div>
 
-                <ScrollArea className="flex-1 px-3 py-2">
-                    <div className="space-y-4">
-                        <div className="space-y-1">
+                <ScrollArea className="flex-1 px-2 py-3">
+                    <div className="space-y-5">
+                        <div className="space-y-0.5">
                             {routes.map((route) => (
                                 <SidebarItem key={route.href} route={route} />
                             ))}
                         </div>
 
-                        <div className="py-2">
+                        <div>
                             {!isCollapsed && (
-                                <h2 className="mb-2 px-4 text-xs font-semibold tracking-tight text-white/90 uppercase">
-                                    Master Data
-                                </h2>
+                                <div className="flex items-center gap-2 mb-2 px-3">
+                                    <div className="h-px flex-1 bg-white/[0.06]" />
+                                    <span className="text-[10px] font-semibold tracking-widest text-white/30 uppercase">Masters</span>
+                                    <div className="h-px flex-1 bg-white/[0.06]" />
+                                </div>
                             )}
-                            <div className="space-y-1">
+                            {isCollapsed && <div className="h-px mx-2 my-2 bg-white/[0.06]" />}
+                            <div className="space-y-0.5">
                                 {masterRoutes.map((route) => (
                                     <SidebarItem key={route.href} route={route} />
                                 ))}
                             </div>
                         </div>
 
-                        <div className="py-2">
+                        <div>
                             {!isCollapsed && (
-                                <h2 className="mb-2 px-4 text-xs font-semibold tracking-tight text-white/90 uppercase">
-                                    System
-                                </h2>
+                                <div className="flex items-center gap-2 mb-2 px-3">
+                                    <div className="h-px flex-1 bg-white/[0.06]" />
+                                    <span className="text-[10px] font-semibold tracking-widest text-white/30 uppercase">System</span>
+                                    <div className="h-px flex-1 bg-white/[0.06]" />
+                                </div>
                             )}
-                            <div className="space-y-1">
-                                <SidebarItem route={{ label: "Settings", icon: Settings, href: "/masters/config" }} />
-                                <SidebarItem route={{ label: "Logout", icon: LogOut, href: "/auth/login" }} />
+                            {isCollapsed && <div className="h-px mx-2 my-2 bg-white/[0.06]" />}
+                            <div className="space-y-0.5">
+                                <SidebarItem route={{ label: "Settings", icon: Settings, href: "/masters/config", color: "text-slate-400" }} />
+                                <SidebarItem route={{ label: "Logout", icon: LogOut, href: "/auth/login", color: "text-rose-400" }} />
                             </div>
                         </div>
                     </div>
                 </ScrollArea>
 
-                <div className="p-3 mt-auto border-t border-blue-900/50">
+                <div className="p-2 border-t border-white/[0.06]">
                     <Button
                         variant="ghost"
                         size="icon"
                         onClick={onToggle}
-                        className="w-full h-8 text-white hover:bg-blue-900 hover:text-white"
+                        className="w-full h-8 text-white/40 hover:bg-white/8 hover:text-white/70 rounded-lg transition-all"
                     >
                         {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
                     </Button>
@@ -262,8 +280,13 @@ export function Sidebar({ className, isCollapsed = false, onToggle }: SidebarPro
 
             {/* Mobile Sidebar */}
             {isMobileOpen && (
-                <div className="fixed inset-0 z-40 bg-blue-950/95 backdrop-blur-sm md:hidden p-4 pt-16 animate-in slide-in-from-left-80">
-                    <div className="space-y-1">
+                <div className="fixed inset-0 z-40 md:hidden p-4 pt-16 animate-in slide-in-from-left-80"
+                    style={{
+                        background: "linear-gradient(180deg, rgba(15,23,42,0.97) 0%, rgba(15,23,42,0.95) 100%)",
+                        backdropFilter: "blur(24px) saturate(1.8)",
+                        WebkitBackdropFilter: "blur(24px) saturate(1.8)",
+                    }}>
+                    <div className="space-y-0.5">
                         {routes.map((route) => (
                             <Link
                                 key={route.href}
@@ -273,14 +296,17 @@ export function Sidebar({ className, isCollapsed = false, onToggle }: SidebarPro
                                 <Button
                                     variant="ghost"
                                     className={cn(
-                                        "w-full justify-start mb-1",
+                                        "w-full justify-start mb-0.5 rounded-lg relative",
                                         location.pathname === route.href
-                                            ? "bg-blue-900 text-white"
-                                            : "text-white hover:text-white hover:bg-blue-900"
+                                            ? "bg-white/15 text-white backdrop-blur-sm border border-white/10"
+                                            : "text-white/60 hover:text-white/90 hover:bg-white/8"
                                     )}
                                 >
-                                    <route.icon className="h-4 w-4 mr-3 text-white" />
-                                    {route.label}
+                                    {location.pathname === route.href && (
+                                        <div className={cn("absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-4 rounded-r-full", route.color?.replace('text-', 'bg-') || 'bg-blue-400')} />
+                                    )}
+                                    <route.icon className={cn("h-4 w-4 mr-3", location.pathname === route.href ? route.color : "text-white/50")} />
+                                    <span className="text-[13px]">{route.label}</span>
                                 </Button>
                             </Link>
                         ))}
