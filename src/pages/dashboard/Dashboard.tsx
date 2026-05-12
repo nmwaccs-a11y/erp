@@ -1,31 +1,14 @@
 import DashboardLayout from "@/components/layout/DashboardLayout";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-    BarChart,
-    Bar,
-    XAxis,
-    YAxis,
-    CartesianGrid,
-    Tooltip,
-    ResponsiveContainer,
-    AreaChart,
-    Area
+    BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
+    ResponsiveContainer, AreaChart, Area
 } from 'recharts';
 import {
-    ArrowUpRight,
-    ArrowDownRight,
-    DollarSign,
-    Activity,
-    Users,
-    Package,
-    Bell,
-    Lightbulb,
-    TrendingUp,
-    AlertTriangle,
-    Zap,
-    ExternalLink
+    ArrowUpRight, ArrowDownRight, DollarSign, Activity,
+    Package, Bell, TrendingUp, AlertTriangle, Zap,
+    ExternalLink, Lightbulb, Factory, ShoppingCart
 } from "lucide-react";
 
 const productionData = [
@@ -48,270 +31,333 @@ const marketData = [
     { name: 'Sun', price: 8700 },
 ];
 
+// Reusable KPI widget with 3D depth effect
+function KpiCard({
+    label, value, sub, subUp, icon: Icon, iconColor, accentColor, bgGradient
+}: {
+    label: string; value: string; sub: string; subUp?: boolean;
+    icon: any; iconColor: string; accentColor: string; bgGradient: string;
+}) {
+    return (
+        <div
+            className={`relative overflow-hidden rounded-2xl p-5 flex flex-col gap-3 ${bgGradient} shadow-lg border border-white/60`}
+            style={{
+                boxShadow: `0 2px 0 0 rgba(0,0,0,0.06), 0 8px 24px -4px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.9)`
+            }}
+        >
+            {/* Subtle 3D top sheen */}
+            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white to-transparent opacity-80" />
+            {/* Bottom depth shadow line */}
+            <div className={`absolute inset-x-2 bottom-0 h-0.5 ${accentColor} rounded-full opacity-20 blur-sm`} />
+
+            <div className="flex items-start justify-between">
+                <p className="text-xs font-semibold uppercase tracking-widest text-slate-500">{label}</p>
+                <div className={`p-2 rounded-xl ${iconColor} shadow-sm`}
+                    style={{ boxShadow: `0 2px 8px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.5)` }}>
+                    <Icon className="h-4 w-4" />
+                </div>
+            </div>
+
+            <div className="font-bold text-2xl tracking-tight text-slate-900 leading-none">{value}</div>
+
+            <div className={`flex items-center gap-1 text-xs font-semibold ${subUp === false ? 'text-rose-600' : 'text-emerald-600'}`}>
+                {subUp === false ? <ArrowDownRight className="h-3 w-3" /> : <ArrowUpRight className="h-3 w-3" />}
+                {sub}
+            </div>
+        </div>
+    );
+}
+
 export default function Dashboard() {
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+    const dateStr = now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
     return (
         <DashboardLayout>
-            <div className="space-y-6 animate-in fade-in duration-500">
-                <div className="flex items-center justify-between">
+            <div className="space-y-8">
+
+                {/* ── HEADER ── */}
+                <div className="flex items-end justify-between">
                     <div>
-                        <h1 className="text-3xl font-bold tracking-tight text-slate-900">Dashboard</h1>
-                        <p className="text-slate-500">Overview of operations, market signals, and system health.</p>
+                        <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-1">{dateStr}</p>
+                        <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">
+                            Command Center
+                        </h1>
+                        <p className="text-slate-500 mt-1 text-sm">Live overview of operations, finance, and market signals.</p>
                     </div>
-                    <div className="flex items-center gap-2">
-                        <Button variant="outline" size="sm">
-                            <ExternalLink className="mr-2 h-4 w-4" /> Export Report
+                    <div className="flex items-center gap-3">
+                        <div className="text-right mr-2 hidden sm:block">
+                            <p className="text-2xl font-mono font-bold text-slate-700">{timeStr}</p>
+                            <p className="text-xs text-slate-400">System Time</p>
+                        </div>
+                        <Button variant="outline" size="sm" className="h-9 rounded-xl border-slate-200 shadow-sm">
+                            <ExternalLink className="mr-2 h-4 w-4" /> Export
                         </Button>
-                        <Button className="bg-blue-900 hover:bg-blue-800 text-white" size="sm">
+                        <Button size="sm"
+                            className="h-9 rounded-xl bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white shadow-md"
+                            style={{ boxShadow: '0 4px 12px rgba(79,70,229,0.35)' }}>
                             <Zap className="mr-2 h-4 w-4" /> AI Actions
                         </Button>
                     </div>
                 </div>
 
-                {/* Key Metrics Row - Aligned with Below (4/3 Split) */}
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-                    <Card className="shadow-sm border-slate-200 lg:col-span-2">
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium text-slate-600">Total Revenue</CardTitle>
-                            <DollarSign className="h-4 w-4 text-emerald-600" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold text-slate-900">$45,231.89</div>
-                            <p className="text-xs text-emerald-600 flex items-center mt-1">
-                                <ArrowUpRight className="h-3 w-3 mr-1" /> +20.1% from last month
-                            </p>
-                        </CardContent>
-                    </Card>
-                    <Card className="shadow-sm border-slate-200 lg:col-span-2">
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium text-slate-600">Production Output</CardTitle>
-                            <Activity className="h-4 w-4 text-blue-600" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold text-slate-900">12,340 kg</div>
-                            <p className="text-xs text-emerald-600 flex items-center mt-1">
-                                <ArrowUpRight className="h-3 w-3 mr-1" /> +4.5% from last week
-                            </p>
-                        </CardContent>
-                    </Card>
-
-                    <Card className="shadow-sm border-slate-200 lg:col-span-3">
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium text-slate-600">Active Alerts</CardTitle>
-                            <Bell className="h-4 w-4 text-rose-600" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold text-slate-900">3</div>
-                            <p className="text-xs text-rose-600 font-medium mt-1">
-                                Requires attention
-                            </p>
-                        </CardContent>
-                    </Card>
+                {/* ── KPI ROW ── */}
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                    <KpiCard
+                        label="Total Revenue"
+                        value="Rs. 45.2M"
+                        sub="+20.1% from last month"
+                        subUp={true}
+                        icon={DollarSign}
+                        iconColor="bg-emerald-100 text-emerald-700"
+                        accentColor="bg-emerald-500"
+                        bgGradient="bg-gradient-to-br from-emerald-50 via-white to-white"
+                    />
+                    <KpiCard
+                        label="Production Output"
+                        value="12,340 kg"
+                        sub="+4.5% from last week"
+                        subUp={true}
+                        icon={Factory}
+                        iconColor="bg-blue-100 text-blue-700"
+                        accentColor="bg-blue-500"
+                        bgGradient="bg-gradient-to-br from-blue-50 via-white to-white"
+                    />
+                    <KpiCard
+                        label="Open Purchase Orders"
+                        value="7 Orders"
+                        sub="2 overdue by >3 days"
+                        subUp={false}
+                        icon={ShoppingCart}
+                        iconColor="bg-amber-100 text-amber-700"
+                        accentColor="bg-amber-500"
+                        bgGradient="bg-gradient-to-br from-amber-50 via-white to-white"
+                    />
+                    <KpiCard
+                        label="Active Alerts"
+                        value="3 Issues"
+                        sub="Requires immediate attention"
+                        subUp={false}
+                        icon={Bell}
+                        iconColor="bg-rose-100 text-rose-700"
+                        accentColor="bg-rose-500"
+                        bgGradient="bg-gradient-to-br from-rose-50 via-white to-white"
+                    />
                 </div>
 
-                {/* Main Content Grid */}
-                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
+                {/* ── MAIN GRID ── */}
+                <div className="grid grid-cols-1 lg:grid-cols-7 gap-6">
 
-                    {/* LEFT COLUMN (Charts & Suggestions) */}
-                    <div className="col-span-4 space-y-6">
-                        {/* Production Chart */}
-                        <Card className="shadow-sm border-slate-200">
-                            <CardHeader>
-                                <CardTitle className="text-slate-900">Weekly Production</CardTitle>
-                                <CardDescription>Output trends over the last 7 days</CardDescription>
-                            </CardHeader>
-                            <CardContent className="pl-2">
-                                <ResponsiveContainer width="100%" height={300}>
-                                    <BarChart data={productionData}>
-                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                                        <XAxis dataKey="name" stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} />
-                                        <YAxis stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `${value}kg`} />
-                                        <Tooltip cursor={{ fill: '#f1f5f9' }} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
-                                        <Bar dataKey="total" fill="#1e3a8a" radius={[4, 4, 0, 0]} />
-                                    </BarChart>
-                                </ResponsiveContainer>
-                            </CardContent>
-                        </Card>
+                    {/* LEFT (4/7) */}
+                    <div className="lg:col-span-4 space-y-6">
 
-                        {/* AI Suggestions Widget */}
-                        <Card className="shadow-sm border-slate-200 bg-gradient-to-br from-indigo-50 to-white">
-                            <CardHeader className="flex flex-row items-center gap-2">
-                                <Lightbulb className="h-5 w-5 text-indigo-600" />
-                                <CardTitle className="text-slate-900">System Suggestions</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="space-y-4">
-                                    <div className="flex gap-4 items-start p-3 bg-white rounded-lg border border-indigo-100 shadow-sm">
-                                        <div className="bg-indigo-100 p-2 rounded-full">
-                                            <TrendingUp className="h-4 w-4 text-indigo-600" />
-                                        </div>
-                                        <div>
-                                            <h4 className="font-semibold text-slate-900 text-sm">optimize Procurement</h4>
-                                            <p className="text-xs text-slate-600 mt-1">Copper prices are trending down. Consider booking 5000kg for next month's unexpected demand.</p>
-                                            <Button variant="link" className="h-auto p-0 text-indigo-600 text-xs mt-2">View Analysis →</Button>
-                                        </div>
-                                    </div>
-                                    <div className="flex gap-4 items-start p-3 bg-white rounded-lg border border-amber-100 shadow-sm">
-                                        <div className="bg-amber-100 p-2 rounded-full">
-                                            <AlertTriangle className="h-4 w-4 text-amber-600" />
-                                        </div>
-                                        <div>
-                                            <h4 className="font-semibold text-slate-900 text-sm">Preventative Maintenance</h4>
-                                            <p className="text-xs text-slate-600 mt-1">Machine M-02 has shown a 5% drop in efficiency. Schedule a checkup.</p>
-                                        </div>
-                                    </div>
+                        {/* Weekly Production Chart */}
+                        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
+                            style={{ boxShadow: '0 1px 0 0 rgba(0,0,0,0.04), 0 4px 16px -2px rgba(0,0,0,0.07)' }}>
+                            <div className="flex items-start justify-between mb-5">
+                                <div>
+                                    <h3 className="font-bold text-slate-900 text-base">Weekly Production</h3>
+                                    <p className="text-xs text-slate-400 mt-0.5">Output trends over the last 7 days (kg)</p>
                                 </div>
-                            </CardContent>
-                        </Card>
-                        {/* Top Parties Exposure Widget */}
-                        <Card className="shadow-sm border-slate-200">
-                            <CardHeader>
-                                <div className="flex items-center justify-between">
+                                <Badge variant="outline" className="text-blue-700 bg-blue-50 border-blue-200 text-xs">This Week</Badge>
+                            </div>
+                            <ResponsiveContainer width="100%" height={220}>
+                                <BarChart data={productionData} barSize={28}>
+                                    <defs>
+                                        <linearGradient id="barGrad" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="0%" stopColor="#3b82f6" stopOpacity={1} />
+                                            <stop offset="100%" stopColor="#1e3a8a" stopOpacity={0.9} />
+                                        </linearGradient>
+                                    </defs>
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                                    <XAxis dataKey="name" stroke="#94a3b8" fontSize={11} tickLine={false} axisLine={false} />
+                                    <YAxis stroke="#94a3b8" fontSize={11} tickLine={false} axisLine={false} tickFormatter={(v) => `${v}kg`} />
+                                    <Tooltip
+                                        cursor={{ fill: '#f8fafc', radius: 6 }}
+                                        contentStyle={{ borderRadius: '10px', border: '1px solid #e2e8f0', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', fontSize: 12 }}
+                                    />
+                                    <Bar dataKey="total" fill="url(#barGrad)" radius={[6, 6, 2, 2]} />
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </div>
+
+                        {/* Top Parties Exposure */}
+                        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
+                            style={{ boxShadow: '0 1px 0 0 rgba(0,0,0,0.04), 0 4px 16px -2px rgba(0,0,0,0.07)' }}>
+                            <div className="flex items-center justify-between mb-5">
+                                <div>
+                                    <h3 className="font-bold text-slate-900 text-base">Top Party Exposure</h3>
+                                    <p className="text-xs text-slate-400 mt-0.5">Financial + Metal Khata dual-ledger view</p>
+                                </div>
+                                <Button variant="outline" size="sm" className="h-8 text-xs rounded-lg">View All</Button>
+                            </div>
+                            <div className="space-y-3">
+                                {[
+                                    { name: "Alpha Cables", type: "CUST", fin: "-120,000", finUp: false, metal: "+50 KG", metalUp: true },
+                                    { name: "Gamma Scrap", type: "VEND", fin: "+45,000", finUp: true, metal: "-120 KG", metalUp: false },
+                                    { name: "Beta Transformers", type: "VEND", fin: "-280,000", finUp: false, metal: "+310 KG", metalUp: true },
+                                ].map((p) => (
+                                    <div key={p.name} className="flex items-center justify-between p-3.5 rounded-xl bg-slate-50 border border-slate-100 hover:bg-slate-100/70 transition-colors">
+                                        <div className="flex items-center gap-3">
+                                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-[10px] font-black ${p.type === 'CUST' ? 'bg-blue-100 text-blue-700' : 'bg-violet-100 text-violet-700'}`}>
+                                                {p.type}
+                                            </div>
+                                            <p className="text-sm font-semibold text-slate-900">{p.name}</p>
+                                        </div>
+                                        <div className="flex gap-4 text-right">
+                                            <div>
+                                                <p className={`text-xs font-bold ${p.finUp ? 'text-emerald-600' : 'text-rose-600'}`}>Fin: {p.fin}</p>
+                                            </div>
+                                            <div>
+                                                <p className={`text-xs font-bold font-mono ${p.metalUp ? 'text-blue-600' : 'text-rose-600'}`}>Metal: {p.metal}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* AI / System Suggestions */}
+                        <div className="rounded-2xl border border-indigo-100 bg-gradient-to-br from-indigo-50/70 to-white p-6 shadow-sm"
+                            style={{ boxShadow: '0 1px 0 0 rgba(0,0,0,0.04), 0 4px 16px -2px rgba(99,102,241,0.08)' }}>
+                            <div className="flex items-center gap-2 mb-5">
+                                <div className="p-1.5 bg-indigo-100 rounded-lg">
+                                    <Lightbulb className="h-4 w-4 text-indigo-600" />
+                                </div>
+                                <h3 className="font-bold text-slate-900 text-base">System Intelligence</h3>
+                            </div>
+                            <div className="space-y-3">
+                                <div className="flex gap-3 p-4 bg-white rounded-xl border border-indigo-100 shadow-sm">
+                                    <div className="shrink-0 w-8 h-8 rounded-lg bg-indigo-100 flex items-center justify-center">
+                                        <TrendingUp className="h-4 w-4 text-indigo-600" />
+                                    </div>
                                     <div>
-                                        <CardTitle className="text-slate-900">Top Parties Exposure</CardTitle>
-                                        <CardDescription>Financial vs Metal Khata (Dual-Ledger)</CardDescription>
-                                    </div>
-                                    <Button variant="outline" size="sm" className="h-8">View All</Button>
-                                </div>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="flex items-center justify-between p-3 bg-slate-50 rounded border border-slate-100">
-                                        <div>
-                                            <p className="text-sm font-semibold text-slate-900">Alpha Cables (CUST)</p>
-                                            <p className="text-xs text-slate-500">Limit: 500k PKR</p>
-                                        </div>
-                                        <div className="text-right">
-                                            <p className="text-sm font-bold text-rose-600">Fin: -120,000</p>
-                                            <p className="text-xs font-mono font-bold text-blue-600">Metal: +50 KG</p>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center justify-between p-3 bg-slate-50 rounded border border-slate-100">
-                                        <div>
-                                            <p className="text-sm font-semibold text-slate-900">Gamma Scrap (VEND)</p>
-                                            <p className="text-xs text-slate-500">Informal Parchi limit</p>
-                                        </div>
-                                        <div className="text-right">
-                                            <p className="text-sm font-bold text-emerald-600">Fin: +45,000</p>
-                                            <p className="text-xs font-mono font-bold text-rose-600">Metal: -120 KG</p>
-                                        </div>
+                                        <h4 className="font-semibold text-slate-900 text-sm">Optimize Procurement</h4>
+                                        <p className="text-xs text-slate-500 mt-1 leading-relaxed">Copper prices are trending down. Consider booking 5,000 kg for next month's demand before rates recover.</p>
+                                        <Button variant="link" className="h-auto p-0 text-indigo-600 text-xs mt-2 font-semibold">View Analysis →</Button>
                                     </div>
                                 </div>
-                            </CardContent>
-                        </Card>
+                                <div className="flex gap-3 p-4 bg-white rounded-xl border border-amber-100 shadow-sm">
+                                    <div className="shrink-0 w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center">
+                                        <AlertTriangle className="h-4 w-4 text-amber-600" />
+                                    </div>
+                                    <div>
+                                        <h4 className="font-semibold text-slate-900 text-sm">Preventative Maintenance Due</h4>
+                                        <p className="text-xs text-slate-500 mt-1 leading-relaxed">Machine M-02 has recorded a 5% efficiency drop over 3 days. Schedule a maintenance check.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    {/* RIGHT COLUMN (Market & Alerts) */}
-                    <div className="col-span-3 space-y-6">
+                    {/* RIGHT (3/7) */}
+                    <div className="lg:col-span-3 space-y-6">
 
-                        {/* Market Insights Widget */}
-                        <Card className="shadow-sm border-slate-200">
-                            <CardHeader>
-                                <div className="flex items-center justify-between">
-                                    <CardTitle className="text-slate-900">LME Market Trends</CardTitle>
-                                    <Badge variant="outline" className="text-emerald-600 bg-emerald-50 border-emerald-200">Bullish</Badge>
+                        {/* LME Market Trends */}
+                        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm overflow-hidden"
+                            style={{ boxShadow: '0 1px 0 0 rgba(0,0,0,0.04), 0 4px 16px -2px rgba(0,0,0,0.07)' }}>
+                            <div className="flex items-start justify-between mb-1">
+                                <div>
+                                    <h3 className="font-bold text-slate-900 text-base">LME Market</h3>
+                                    <p className="text-xs text-slate-400 mt-0.5">Copper price index — 7 day</p>
                                 </div>
-                                <CardDescription>Real-time copper price indices</CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="h-[150px] w-full mb-4">
-                                    <ResponsiveContainer width="100%" height="100%">
-                                        <AreaChart data={marketData}>
-                                            <defs>
-                                                <linearGradient id="colorPrice" x1="0" y1="0" x2="0" y2="1">
-                                                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.1} />
-                                                    <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
-                                                </linearGradient>
-                                            </defs>
-                                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                                            <XAxis dataKey="name" hide />
-                                            <YAxis hide domain={['dataMin - 100', 'dataMax + 100']} />
-                                            <Tooltip contentStyle={{ borderRadius: '8px', border: 'none' }} />
-                                            <Area type="monotone" dataKey="price" stroke="#10b981" fillOpacity={1} fill="url(#colorPrice)" />
-                                        </AreaChart>
-                                    </ResponsiveContainer>
-                                </div>
-                                <div className="space-y-3">
-                                    <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-                                        <span className="text-sm font-medium text-slate-700">LME Copper</span>
+                                <Badge variant="outline" className="text-emerald-700 bg-emerald-50 border-emerald-200 text-xs">Bullish</Badge>
+                            </div>
+                            <div className="h-[120px] w-full -mx-2 mt-2">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <AreaChart data={marketData} margin={{ top: 5, right: 0, left: 0, bottom: 0 }}>
+                                        <defs>
+                                            <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+                                                <stop offset="5%" stopColor="#10b981" stopOpacity={0.15} />
+                                                <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                                            </linearGradient>
+                                        </defs>
+                                        <XAxis dataKey="name" hide />
+                                        <YAxis hide domain={['dataMin - 100', 'dataMax + 100']} />
+                                        <Tooltip
+                                            contentStyle={{ borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: 11 }}
+                                            formatter={(v: any) => [`$${v}`, 'Price']}
+                                        />
+                                        <Area type="monotone" dataKey="price" stroke="#10b981" strokeWidth={2} fillOpacity={1} fill="url(#areaGrad)" dot={false} />
+                                    </AreaChart>
+                                </ResponsiveContainer>
+                            </div>
+                            <div className="space-y-2.5 mt-3 pt-3 border-t border-slate-100">
+                                {[
+                                    { name: "LME Copper", price: "$8,700.50", change: "+1.2%", up: true },
+                                    { name: "LME Aluminum", price: "$2,450.00", change: "-0.5%", up: false },
+                                    { name: "PKR/USD", price: "278.50", change: "-0.3%", up: false },
+                                ].map(m => (
+                                    <div key={m.name} className="flex items-center justify-between">
+                                        <span className="text-sm font-medium text-slate-600">{m.name}</span>
                                         <div className="text-right">
-                                            <span className="block text-sm font-bold text-slate-900">$8,700.50</span>
-                                            <span className="text-xs text-emerald-600">+1.2%</span>
+                                            <span className="block text-sm font-bold text-slate-900">{m.price}</span>
+                                            <span className={`text-xs font-semibold ${m.up ? 'text-emerald-600' : 'text-rose-600'}`}>{m.change}</span>
                                         </div>
                                     </div>
-                                    <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-                                        <span className="text-sm font-medium text-slate-700">LME Aluminum</span>
-                                        <div className="text-right">
-                                            <span className="block text-sm font-bold text-slate-900">$2,450.00</span>
-                                            <span className="text-xs text-rose-600">-0.5%</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
+                                ))}
+                            </div>
+                        </div>
 
-                        {/* Critical Alerts Widget */}
-                        <Card className="shadow-sm border-slate-200">
-                            <CardHeader>
-                                <CardTitle className="text-slate-900">Critical Alerts</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="space-y-4">
-                                    <div className="flex items-start gap-3">
-                                        <div className="w-2 h-2 mt-2 rounded-full bg-rose-500 shrink-0" />
-                                        <div className="space-y-1">
-                                            <p className="text-sm font-medium text-slate-900">Low Inventory: 8mm Rod</p>
-                                            <p className="text-xs text-slate-500">Stock below safety level (500kg). Production may halt in 2 days.</p>
-                                            <Button variant="outline" size="sm" className="h-7 text-xs mt-1">Reorder Now</Button>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-start gap-3">
-                                        <div className="w-2 h-2 mt-2 rounded-full bg-amber-500 shrink-0" />
-                                        <div className="space-y-1">
-                                            <p className="text-sm font-medium text-slate-900">Payment Overdue</p>
-                                            <p className="text-xs text-slate-500">Invoice #INV-2993 is 5 days overdue from Allied Corp.</p>
-                                        </div>
-                                    </div>
+                        {/* Critical Alerts */}
+                        <div className="rounded-2xl border border-rose-100 bg-white p-6 shadow-sm"
+                            style={{ boxShadow: '0 1px 0 0 rgba(0,0,0,0.04), 0 4px 16px -2px rgba(239,68,68,0.07)' }}>
+                            <div className="flex items-center gap-2 mb-4">
+                                <div className="p-1.5 bg-rose-100 rounded-lg">
+                                    <Bell className="h-4 w-4 text-rose-600" />
                                 </div>
-                            </CardContent>
-                        </Card>
+                                <h3 className="font-bold text-slate-900 text-base">Critical Alerts</h3>
+                                <Badge className="ml-auto bg-rose-100 text-rose-700 hover:bg-rose-100 text-xs">3 Active</Badge>
+                            </div>
+                            <div className="space-y-3">
+                                {[
+                                    { dot: "bg-rose-500", title: "Low Inventory: 8mm Rod", desc: "Stock below safety level (500 kg). Production may halt in 2 days.", action: "Reorder Now" },
+                                    { dot: "bg-amber-500", title: "Payment Overdue", desc: "Invoice #INV-2993 is 5 days overdue from Allied Corp.", action: null },
+                                    { dot: "bg-amber-400", title: "Supplier Rate Expiring", desc: "Agreed rate with Beta Transformers expires in 48 hours.", action: null },
+                                ].map((a, i) => (
+                                    <div key={i} className="flex gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100">
+                                        <div className={`mt-1.5 w-2 h-2 rounded-full shrink-0 ${a.dot}`} />
+                                        <div className="flex-1">
+                                            <p className="text-sm font-semibold text-slate-900">{a.title}</p>
+                                            <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">{a.desc}</p>
+                                            {a.action && (
+                                                <Button variant="outline" size="sm" className="h-7 text-xs mt-2 rounded-lg border-rose-200 text-rose-700 hover:bg-rose-50">{a.action}</Button>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
 
-                        {/* Parchi Due Widget */}
-                        <Card className="shadow-sm border-slate-200 bg-amber-50/50">
-                            <CardHeader className="pb-3">
-                                <div className="flex items-center justify-between">
-                                    <CardTitle className="text-slate-900 flex items-center gap-2">
-                                        <Activity className="h-4 w-4 text-amber-600" />
-                                        Parchis Due Today
-                                    </CardTitle>
-                                    <Badge variant="secondary" className="bg-amber-100 text-amber-700 hover:bg-amber-100">3 Pending</Badge>
+                        {/* Parchis Due */}
+                        <div className="rounded-2xl border border-amber-200/60 bg-gradient-to-br from-amber-50/60 to-white p-6 shadow-sm"
+                            style={{ boxShadow: '0 1px 0 0 rgba(0,0,0,0.04), 0 4px 16px -2px rgba(245,158,11,0.08)' }}>
+                            <div className="flex items-center gap-2 mb-4">
+                                <div className="p-1.5 bg-amber-100 rounded-lg">
+                                    <Activity className="h-4 w-4 text-amber-600" />
                                 </div>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="space-y-3">
-                                    <div className="flex items-center justify-between p-2 bg-white rounded border border-amber-100 shadow-sm">
+                                <h3 className="font-bold text-slate-900 text-base">Parchis Due Today</h3>
+                                <Badge className="ml-auto bg-amber-100 text-amber-700 hover:bg-amber-100 text-xs">3 Pending</Badge>
+                            </div>
+                            <div className="space-y-2.5">
+                                {[
+                                    { id: "#P-4001", party: "A.K. Traders", detail: "2,000 kg @ PKR 2,450" },
+                                    { id: "#P-4005", party: "Bilal & Sons", detail: "Payment: 5.2M PKR" },
+                                    { id: "#P-4008", party: "Noor Steel", detail: "1,500 kg @ PKR 2,390" },
+                                ].map((p) => (
+                                    <div key={p.id} className="flex items-center justify-between p-3 bg-white rounded-xl border border-amber-100 shadow-sm hover:border-amber-300 transition-colors">
                                         <div>
-                                            <p className="text-sm font-medium text-slate-900">#P-4001 • A.K. Traders</p>
-                                            <p className="text-xs text-slate-500">Commitment: 2000kg @ 2450</p>
+                                            <p className="text-sm font-semibold text-slate-900">{p.id} · {p.party}</p>
+                                            <p className="text-xs text-slate-500 mt-0.5 font-mono">{p.detail}</p>
                                         </div>
-                                        <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-slate-400 hover:text-amber-600">
-                                            <ExternalLink className="h-3 w-3" />
+                                        <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-amber-500 hover:text-amber-700 hover:bg-amber-50 rounded-lg">
+                                            <ExternalLink className="h-3.5 w-3.5" />
                                         </Button>
                                     </div>
-                                    <div className="flex items-center justify-between p-2 bg-white rounded border border-amber-100 shadow-sm">
-                                        <div>
-                                            <p className="text-sm font-medium text-slate-900">#P-4005 • Bilal & Sons</p>
-                                            <p className="text-xs text-slate-500">Payment: 5.2M PKR</p>
-                                        </div>
-                                        <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-slate-400 hover:text-amber-600">
-                                            <ExternalLink className="h-3 w-3" />
-                                        </Button>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-
-
-
+                                ))}
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
