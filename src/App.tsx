@@ -1,4 +1,5 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { AnimatePresence } from "framer-motion";
 import Dashboard from "./pages/dashboard/Dashboard";
 import Purchase from "./pages/procurement/Purchase";
 import Production from "./pages/production/Production";
@@ -28,10 +29,12 @@ import WattaMaster from "./pages/masters/WattaMaster";
 import RateManagement from "./pages/ratemanagement/RateManagement";
 import UnifiedPartyDashboard from "./pages/masters/UnifiedPartyDashboard";
 
-function App() {
+function AnimatedRoutes() {
+  const location = useLocation();
+
   return (
-    <Router>
-      <Routes>
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
         <Route path="/auth/login" element={<Login />} />
         <Route path="/auth/2fa" element={<TwoFactor />} />
         <Route path="/auth/forgot-password" element={<ForgotPassword />} />
@@ -66,6 +69,14 @@ function App() {
         <Route path="/market" element={<MarketIntelligence />} />
         <Route path="/scrap" element={<TriangleTrade />} />
       </Routes>
+    </AnimatePresence>
+  );
+}
+
+function App() {
+  return (
+    <Router>
+      <AnimatedRoutes />
     </Router>
   );
 }

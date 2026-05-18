@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Building2, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import PageMotion from "@/components/layout/PageMotion";
 
 export default function TenantSelection() {
     const navigate = useNavigate();
@@ -30,6 +31,7 @@ export default function TenantSelection() {
     };
 
     return (
+        <PageMotion>
         <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
             <div className="w-full max-w-2xl space-y-6">
                 <div className="text-center space-y-2">
@@ -79,5 +81,6 @@ export default function TenantSelection() {
                 </div>
             </div>
         </div>
+        </PageMotion>
     );
 }

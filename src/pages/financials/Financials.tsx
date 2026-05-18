@@ -11,6 +11,7 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { Check, ChevronsUpDown, ArrowRightLeft, Wallet, History, FileText, Save, AlertCircle, Search, Edit, Trash2 } from "lucide-react";
 import { useState, useMemo, useRef } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { cn } from "@/lib/utils";
 
 // --- MOCK DATA ---
 const COA_ACCOUNTS = [
@@ -37,27 +38,6 @@ const INITIAL_LEDGER = [
     { id: "TXN-003", pageNo: "1", date: "2026-05-08", account: "Misc Expense", voucherType: "CPV", mode: "Cash", desc: "Tea & Misc Expenses", debit: 0, credit: 500, balance: 12450 },
 ];
 
-function BalanceCard({ label, value, icon: Icon, accent }: { label: string; value: string; icon: any; accent: "emerald" | "blue" | "slate" }) {
-    const colors = {
-        emerald: { bg: "from-emerald-50 via-white to-white", icon: "bg-emerald-100 text-emerald-700", bar: "bg-emerald-400" },
-        blue: { bg: "from-blue-50 via-white to-white", icon: "bg-blue-100 text-blue-700", bar: "bg-blue-400" },
-        slate: { bg: "from-slate-50 via-white to-white", icon: "bg-slate-100 text-slate-700", bar: "bg-slate-400" },
-    }[accent];
-
-    return (
-        <div className={`relative overflow-hidden rounded-2xl p-4 flex items-center gap-4 bg-gradient-to-br ${colors.bg} border border-white/60 flex-1 min-w-[240px]`}
-            style={{ boxShadow: "0 2px 0 0 rgba(0,0,0,0.05), 0 8px 24px -4px rgba(0,0,0,0.10), inset 0 1px 0 rgba(255,255,255,0.9)" }}>
-            <div className={`p-3 rounded-xl ${colors.icon} shadow-sm`} style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.10), inset 0 1px 0 rgba(255,255,255,0.5)" }}>
-                <Icon className="h-5 w-5" />
-            </div>
-            <div>
-                <p className="text-xs font-semibold uppercase tracking-widest text-slate-500">{label}</p>
-                <div className="font-bold text-xl tracking-tight text-slate-900 leading-none mt-1">{value}</div>
-            </div>
-        </div>
-    );
-}
-
 export default function Financials() {
     const [ledgerData, setLedgerData] = useState(INITIAL_LEDGER);
     const [parchiData, setParchiData] = useState(MOCK_PARCHI_COMMITMENTS);
@@ -74,15 +54,15 @@ export default function Financials() {
     const [party, setParty] = useState("");
     const [amount, setAmount] = useState("");
     const [desc, setDesc] = useState("");
-    
+
     const [searchQuery, setSearchQuery] = useState("");
-    
+
     const [selectedParchiId, setSelectedParchiId] = useState("");
     const [parchiDueDate, setParchiDueDate] = useState("");
 
     const selectedParchi = useMemo(() => parchiData.find(p => p.parchi_id === selectedParchiId), [selectedParchiId, parchiData]);
     const pageEntries = useMemo(() => ledgerData.filter(r => r.date === date && r.pageNo === pageNo), [ledgerData, date, pageNo]);
-    const filteredLedger = useMemo(() => pageEntries.filter(row => 
+    const filteredLedger = useMemo(() => pageEntries.filter(row =>
         searchQuery === "" || row.account.toLowerCase().includes(searchQuery.toLowerCase()) || row.desc.toLowerCase().includes(searchQuery.toLowerCase()) || row.id.toLowerCase().includes(searchQuery.toLowerCase())
     ), [pageEntries, searchQuery]);
 
@@ -100,8 +80,7 @@ export default function Financials() {
     }, [ledgerData, pageEntries]);
 
     const receiptAmount = Number(amount) || 0;
-    
-    // Calculate the true max allowed amount, accounting for the old amount if editing
+
     const maxAllowedAmount = useMemo(() => {
         if (!selectedParchi) return 0;
         let oldAmount = 0;
@@ -115,17 +94,15 @@ export default function Financials() {
     }, [selectedParchi, editingId, clearanceMode, ledgerData]);
 
     const isOverCleared = clearanceMode === "Clear Parchi" && selectedParchi && receiptAmount > maxAllowedAmount;
-    
+
     const isReadyToSave = () => {
         if (!party || receiptAmount <= 0) return false;
         if (actionType === "ISSUE_PARCHI" && !parchiDueDate) return false;
-        // When editing an existing parchi-mode entry, we don't require re-selecting
-        // the parchi — just let the user update amount/desc freely.
         if (clearanceMode === "Clear Parchi") {
             if (editingId) return !isOverCleared && receiptAmount > 0;
             return !isOverCleared && selectedParchiId !== "";
         }
-        return desc.trim() !== ""; // Cash mode requires desc
+        return desc.trim() !== "";
     };
 
     const recalculateBalances = (data: any[]) => {
@@ -202,79 +179,84 @@ export default function Financials() {
 
     const handleDelete = () => {
         if (!editingId) return;
-
-        const oldRow = ledgerData.find(r => r.id === editingId);
-        if (oldRow && clearanceMode === "Clear Parchi" && selectedParchiId) {
-            const oldAmount = oldRow.debit > 0 ? oldRow.debit : oldRow.credit;
-            
-            setParchiData(prev => prev.map(p => {
-                if (p.parchi_id === selectedParchiId) {
-                    const newCleared = p.cleared_amount - oldAmount;
-                    const newAvail = p.total_amount - newCleared;
-                    return { ...p, cleared_amount: newCleared, available_balance: newAvail, status: newAvail === 0 ? "Cleared" : (newCleared === 0 ? "Pending" : "Partially Cleared") };
-                }
-                return p;
-            }));
-        }
-
         setLedgerData(prev => recalculateBalances(prev.filter(r => r.id !== editingId)));
         setEditingId(null);
         setAmount(""); setDesc(""); setSelectedParchiId(""); setParty("");
-        setClearanceMode("Cash");
-        setActionType("CRV");
     };
 
     return (
         <DashboardLayout>
-            <div className="space-y-8 max-w-7xl mx-auto">
+            <div className="space-y-6">
                 {/* ── HEADER ── */}
-                <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
-                        <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-1">Financials</p>
-                        <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">Unified Cashbook</h1>
-                        <p className="text-slate-500 mt-1 text-sm">Integrated Cash, Bank, and Hwala Commitments</p>
-                    </div>
-                    
-                    <div className="flex flex-wrap gap-4">
-                        <BalanceCard label="Cash in Hand" value={`₨ ${currentBalance.toLocaleString()}`} icon={Wallet} accent="emerald" />
-                        <BalanceCard label="Bank Balance" value="₨ 145,200" icon={History} accent="blue" />
-                        <BalanceCard label="Parchi Liability" value={`₨ ${parchiData.reduce((acc, curr) => acc + curr.available_balance, 0).toLocaleString()}`} icon={FileText} accent="slate" />
+                        <h1 className="text-3xl font-bold tracking-tight text-slate-900">Financials</h1>
+                        <p className="text-slate-500">Integrated Cash, Bank, and Hwala Commitments</p>
                     </div>
                 </div>
 
+                <div className="grid gap-4 md:grid-cols-3">
+                    <Card className="shadow-soft border-slate-100 bg-white transition-all duration-300 hover:shadow-md hover:-translate-y-1 hover:border-slate-200">
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium">Cash in Hand</CardTitle>
+                            <Wallet className="h-4 w-4 text-emerald-500" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold">₨ {currentBalance.toLocaleString()}</div>
+                        </CardContent>
+                    </Card>
+                    <Card className="shadow-soft border-slate-100 bg-white transition-all duration-300 hover:shadow-md hover:-translate-y-1 hover:border-slate-200">
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium">Bank Balance</CardTitle>
+                            <History className="h-4 w-4 text-blue-500" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold">₨ 145,200</div>
+                        </CardContent>
+                    </Card>
+                    <Card className="shadow-soft border-slate-100 bg-white transition-all duration-300 hover:shadow-md hover:-translate-y-1 hover:border-slate-200">
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium">Parchi Liability</CardTitle>
+                            <FileText className="h-4 w-4 text-slate-500" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold">₨ {parchiData.reduce((acc, curr) => acc + curr.available_balance, 0).toLocaleString()}</div>
+                        </CardContent>
+                    </Card>
+                </div>
+
                 {/* ── ENTRY FORM CARD ── */}
-                <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden"
-                    style={{ boxShadow: "0 1px 0 0 rgba(0,0,0,0.04), 0 4px 16px -2px rgba(0,0,0,0.07)" }}>
-                    <div className="bg-slate-50/50 border-b border-slate-100 p-5 px-6">
-                        <h3 className="text-lg font-bold text-slate-900 flex items-center">
+                <Card className="shadow-soft border-slate-100 bg-white transition-all duration-300 hover:shadow-md hover:-translate-y-1 hover:border-slate-200">
+                    <CardHeader>
+                        <CardTitle className="flex items-center">
                             <ArrowRightLeft className="mr-2 h-5 w-5 text-blue-600" />
                             New Entry Form
-                        </h3>
-                    </div>
-                    <div className="p-6 space-y-6">
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                            <div className="space-y-5">
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="space-y-4">
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                        <Label className="text-xs font-bold uppercase tracking-widest text-slate-500">Date</Label>
-                                        <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="bg-white border-slate-200 rounded-xl" />
+                                        <Label>Date</Label>
+                                        <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label className="text-xs font-bold uppercase tracking-widest text-slate-500">Page No.</Label>
-                                        <Input value={pageNo} onChange={(e) => setPageNo(e.target.value)} className="bg-white border-slate-200 rounded-xl" />
+                                        <Label>Page No.</Label>
+                                        <Input value={pageNo} onChange={(e) => setPageNo(e.target.value)} />
                                     </div>
                                 </div>
                                 <div className="space-y-2">
-                                    <Label className="text-xs font-bold uppercase tracking-widest text-slate-500">Action Type</Label>
-                                    <div className="flex bg-slate-100 p-1 rounded-xl">
-                                        <button 
-                                            className={`flex-1 py-2.5 px-3 rounded-lg text-sm font-bold transition-colors ${actionType === "CRV" ? "bg-white shadow-sm text-emerald-700 border border-slate-200" : "text-slate-500 hover:text-slate-700"}`}
+                                    <Label>Action Type</Label>
+                                    <div className="flex bg-slate-100 p-1 rounded-md">
+                                        <button
+                                            className={cn("flex-1 py-1.5 px-3 rounded-sm text-sm font-medium transition-all", actionType === "CRV" ? "bg-white shadow-sm text-emerald-700" : "text-slate-500 hover:text-slate-700")}
                                             onClick={() => { setActionType("CRV"); setClearanceMode("Cash"); setSelectedParchiId(""); }}
                                         >
                                             CRV (Receipt)
                                         </button>
-                                        <button 
-                                            className={`flex-1 py-2.5 px-3 rounded-lg text-sm font-bold transition-colors ${actionType === "CPV" ? "bg-white shadow-sm text-rose-700 border border-slate-200" : "text-slate-500 hover:text-slate-700"}`}
+                                        <button
+                                            className={cn("flex-1 py-1.5 px-3 rounded-sm text-sm font-medium transition-all", actionType === "CPV" ? "bg-white shadow-sm text-rose-700" : "text-slate-500 hover:text-slate-700")}
                                             onClick={() => { setActionType("CPV"); setClearanceMode("Cash"); setSelectedParchiId(""); }}
                                         >
                                             CPV (Payment)
@@ -283,10 +265,10 @@ export default function Financials() {
                                 </div>
 
                                 <div className="space-y-2 flex flex-col">
-                                    <Label className="text-xs font-bold uppercase tracking-widest text-slate-500">Account / Party</Label>
+                                    <Label>Account / Party</Label>
                                     <Popover open={accountOpen} onOpenChange={setAccountOpen}>
                                         <PopoverTrigger asChild>
-                                            <Button variant="outline" role="combobox" aria-expanded={accountOpen} className="w-full justify-between bg-white border-slate-200 rounded-xl font-normal h-10" ref={accountBtnRef}>
+                                            <Button variant="outline" role="combobox" aria-expanded={accountOpen} className="w-full justify-between font-normal" ref={accountBtnRef}>
                                                 {party ? COA_ACCOUNTS.find((acc) => acc.name === party)?.name : "Search account..."}
                                                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                                             </Button>
@@ -311,17 +293,17 @@ export default function Financials() {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label className="text-xs font-bold uppercase tracking-widest text-slate-500">Payment Mode</Label>
-                                    <div className="flex bg-slate-100 p-1 rounded-xl">
-                                        <button 
-                                            className={`flex-1 py-2.5 px-3 rounded-lg text-sm font-semibold transition-colors ${clearanceMode === "Cash" ? "bg-white shadow-sm text-slate-900 border border-slate-200" : "text-slate-500 hover:text-slate-700"}`}
+                                    <Label>Payment Mode</Label>
+                                    <div className="flex bg-slate-100 p-1 rounded-md">
+                                        <button
+                                            className={cn("flex-1 py-1.5 px-3 rounded-sm text-sm font-medium transition-all", clearanceMode === "Cash" ? "bg-white shadow-sm text-slate-900" : "text-slate-500 hover:text-slate-700")}
                                             onClick={() => { setClearanceMode("Cash"); setSelectedParchiId(""); }}
                                         >
                                             Direct Cash / Bank
                                         </button>
                                         {actionType === "CRV" && (
-                                            <button 
-                                                className={`flex-1 py-2.5 px-3 rounded-lg text-sm font-semibold transition-colors ${clearanceMode === "Clear Parchi" ? "bg-blue-50 shadow-sm text-blue-800 border border-blue-200" : "text-slate-500 hover:text-slate-700"}`}
+                                            <button
+                                                className={cn("flex-1 py-1.5 px-3 rounded-sm text-sm font-medium transition-all", clearanceMode === "Clear Parchi" ? "bg-white shadow-sm text-blue-700" : "text-slate-500 hover:text-slate-700")}
                                                 onClick={() => setClearanceMode("Clear Parchi")}
                                             >
                                                 Clear Pending Parchi
@@ -331,13 +313,13 @@ export default function Financials() {
                                 </div>
                             </div>
 
-                            <div className="bg-slate-50/80 p-6 rounded-xl border border-slate-200 h-full flex flex-col justify-center">
+                            <div className="bg-slate-50 p-6 rounded-md border border-slate-100 h-full flex flex-col justify-center">
                                 {clearanceMode === "Clear Parchi" ? (
-                                    <div className="space-y-5 animate-in fade-in">
+                                    <div className="space-y-4">
                                         <div className="space-y-2">
-                                            <Label className="text-blue-900 font-bold">Select Parchi to Clear</Label>
+                                            <Label>Select Parchi to Clear</Label>
                                             <Select value={selectedParchiId} onValueChange={setSelectedParchiId} disabled={!party}>
-                                                <SelectTrigger className="border-blue-300 shadow-sm rounded-xl h-10">
+                                                <SelectTrigger>
                                                     <SelectValue placeholder={party ? "Available Parchis..." : "Select Account First"} />
                                                 </SelectTrigger>
                                                 <SelectContent>
@@ -355,51 +337,51 @@ export default function Financials() {
 
                                         {selectedParchi && (
                                             <div className="grid grid-cols-2 gap-4">
-                                                <div className="bg-white p-3 rounded-xl border border-slate-100">
-                                                    <Label className="text-[10px] uppercase tracking-widest font-bold text-slate-400">Parchi Total</Label>
-                                                    <div className="font-mono text-slate-700 text-sm mt-1">₨ {selectedParchi.total_amount.toLocaleString()}</div>
+                                                <div className="bg-white p-3 rounded-md border border-slate-100 shadow-sm">
+                                                    <Label className="text-xs text-slate-500">Parchi Total</Label>
+                                                    <div className="font-medium text-sm mt-1">₨ {selectedParchi.total_amount.toLocaleString()}</div>
                                                 </div>
-                                                <div className="bg-white p-3 rounded-xl border border-blue-100">
-                                                    <Label className="text-[10px] uppercase tracking-widest font-bold text-slate-400">Available Bal.</Label>
-                                                    <div className="font-mono font-bold text-blue-700 text-sm mt-1">₨ {selectedParchi.available_balance.toLocaleString()}</div>
+                                                <div className="bg-white p-3 rounded-md border border-slate-100 shadow-sm">
+                                                    <Label className="text-xs text-slate-500">Available Bal.</Label>
+                                                    <div className="font-medium text-sm mt-1 text-blue-600">₨ {selectedParchi.available_balance.toLocaleString()}</div>
                                                 </div>
                                             </div>
                                         )}
 
                                         <div className="space-y-2 mt-4">
-                                            <Label className={`${isOverCleared ? "text-red-600" : "text-slate-700"} font-bold`}>Clearance Amount</Label>
-                                            <Input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} 
-                                                className={`font-mono text-xl h-12 rounded-xl ${isOverCleared ? "border-red-500 focus-visible:ring-red-500" : "border-slate-300"}`}
+                                            <Label className={isOverCleared ? "text-red-600" : ""}>Clearance Amount</Label>
+                                            <Input type="number" value={amount} onChange={(e) => setAmount(e.target.value)}
+                                                className={isOverCleared ? "border-red-500 focus-visible:ring-red-500" : ""}
                                                 placeholder="0.00" disabled={!selectedParchi} />
                                         </div>
 
                                         <div className="space-y-2">
-                                            <Label className="text-xs font-bold uppercase tracking-widest text-slate-500">Description</Label>
-                                            <Input value={desc} onChange={(e) => setDesc(e.target.value)} placeholder="e.g. Cleared via HBL transfer..." className="border-slate-300 h-11 rounded-xl" disabled={!selectedParchi} />
+                                            <Label>Description</Label>
+                                            <Input value={desc} onChange={(e) => setDesc(e.target.value)} placeholder="e.g. Cleared via HBL transfer..." disabled={!selectedParchi} />
                                         </div>
 
                                         {isOverCleared && (
-                                            <Alert variant="destructive" className="py-2 border-red-200 bg-red-50">
+                                            <Alert variant="destructive" className="py-2">
                                                 <AlertCircle className="h-4 w-4" />
                                                 <AlertDescription className="ml-2 font-medium text-xs">Cannot exceed ₨ {maxAllowedAmount.toLocaleString()}.</AlertDescription>
                                             </Alert>
                                         )}
 
                                         {selectedParchi && !isOverCleared && receiptAmount > 0 && (
-                                            <div className="p-3 bg-emerald-50 rounded-xl text-sm text-emerald-800 font-medium flex justify-between border border-emerald-100">
-                                                Status update: <span className="font-bold">{receiptAmount === maxAllowedAmount ? "Cleared" : "Partially Cleared"}</span>
+                                            <div className="p-3 bg-emerald-50 rounded-md text-sm text-emerald-800 font-medium">
+                                                Status update: {receiptAmount === maxAllowedAmount ? "Cleared" : "Partially Cleared"}
                                             </div>
                                         )}
                                     </div>
                                 ) : (
-                                    <div className="space-y-5 animate-in fade-in">
+                                    <div className="space-y-4">
                                         <div className="space-y-2">
-                                            <Label className="text-xs font-bold uppercase tracking-widest text-slate-500">Amount (₨)</Label>
-                                            <Input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} className="font-mono text-2xl font-bold border-slate-300 h-14 rounded-xl" placeholder="0.00" />
+                                            <Label>Amount (₨)</Label>
+                                            <Input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="0.00" />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label className="text-xs font-bold uppercase tracking-widest text-slate-500">Description</Label>
-                                            <Input value={desc} onChange={(e) => setDesc(e.target.value)} placeholder="Enter details..." className="border-slate-300 h-12 rounded-xl" />
+                                            <Label>Description</Label>
+                                            <Input value={desc} onChange={(e) => setDesc(e.target.value)} placeholder="Enter details..." />
                                         </div>
                                     </div>
                                 )}
@@ -408,128 +390,131 @@ export default function Financials() {
 
                         <div className="flex justify-between pt-4 border-t border-slate-100">
                             {editingId ? (
-                                <Button variant="destructive" onClick={handleDelete} className="rounded-xl">
+                                <Button variant="destructive" onClick={handleDelete}>
                                     <Trash2 className="h-4 w-4 mr-2" /> Delete Entry
                                 </Button>
                             ) : <div />}
-                            <Button size="lg" onClick={handleSave} disabled={!isReadyToSave()} 
-                                className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white min-w-[200px] rounded-xl shadow-md"
-                                style={{ boxShadow: "0 4px 12px rgba(37,99,235,0.30)" }}>
+                            <Button onClick={handleSave} disabled={!isReadyToSave()} className="bg-blue-600 hover:bg-blue-700 min-w-[200px]">
                                 <Save className="h-4 w-4 mr-2" />
                                 {editingId ? "Update Entry" : "Record Entry"}
                             </Button>
                         </div>
-                    </div>
-                </div>
+                    </CardContent>
+                </Card>
 
                 {/* ── BOTTOM SECTION: CASHBOOK LEDGER ── */}
-                <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden"
-                    style={{ boxShadow: "0 1px 0 0 rgba(0,0,0,0.04), 0 4px 16px -2px rgba(0,0,0,0.07)" }}>
-                    <div className="bg-slate-50/50 p-5 px-6 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                        <div className="flex items-center gap-3">
-                            <h3 className="font-bold text-slate-900 text-base">Daily Transaction Ledger</h3>
-                            <Badge variant="outline" className="bg-white shadow-sm rounded-lg">{filteredLedger.length} Entries</Badge>
+                <Card className="shadow-soft border-slate-100 bg-white transition-all duration-300 hover:shadow-md hover:-translate-y-1 hover:border-slate-200">
+                    <CardHeader>
+                        <div className="flex items-center justify-between">
+                            <div className="space-y-1">
+                                <CardTitle className="flex items-center gap-2">
+                                    Daily Transaction Ledger
+                                    <Badge variant="secondary">{filteredLedger.length} Entries</Badge>
+                                </CardTitle>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <div className="relative">
+                                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-500" />
+                                    <Input placeholder="Search entries..." className="pl-9 w-[250px]" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
+                                </div>
+                            </div>
                         </div>
-                        <div className="relative">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                            <Input placeholder="Search entries..." className="pl-9 w-[250px] bg-white border-slate-200 rounded-xl h-9 text-sm" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
+                    </CardHeader>
+                    
+                    <div className="bg-slate-50 border-y border-slate-100 px-6 py-2 flex justify-between items-center text-sm">
+                        <div className="flex items-center gap-2">
+                            <span className="text-slate-500 font-medium">Opening Balance:</span>
+                            <span className="font-medium text-slate-900">₨ {openingBalance.toLocaleString()}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <span className="text-slate-500 font-medium">Closing Balance:</span>
+                            <span className="font-semibold text-blue-600">₨ {closingBalance.toLocaleString()}</span>
                         </div>
                     </div>
-                    
-                    <div className="bg-slate-50 border-b border-slate-200 px-6 py-3 flex justify-between items-center text-sm shadow-inner">
-                        <div className="flex items-center gap-2">
-                            <span className="text-[10px] uppercase tracking-widest font-bold text-slate-400">Opening Balance</span>
-                            <span className="font-mono font-bold text-slate-800 text-base">₨ {openingBalance.toLocaleString()}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <span className="text-[10px] uppercase tracking-widest font-bold text-slate-400">Closing Balance</span>
-                            <span className="font-mono font-black text-blue-700 text-lg">₨ {closingBalance.toLocaleString()}</span>
-                        </div>
-                    </div>
-                    
-                    <Table>
-                        <TableHeader>
-                            <TableRow className="bg-white hover:bg-white border-b-slate-200">
-                                <TableHead className="w-[80px] font-semibold text-xs uppercase tracking-widest text-slate-500">Date</TableHead>
-                                <TableHead className="w-[90px] font-semibold text-xs uppercase tracking-widest text-slate-500">Voucher</TableHead>
-                                <TableHead className="w-[70px] font-semibold text-xs uppercase tracking-widest text-slate-500">Page</TableHead>
-                                <TableHead className="font-semibold text-xs uppercase tracking-widest text-slate-500">Account</TableHead>
-                                <TableHead className="font-semibold text-xs uppercase tracking-widest text-slate-500">Type</TableHead>
-                                <TableHead className="font-semibold text-xs uppercase tracking-widest text-slate-500">Mode</TableHead>
-                                <TableHead className="font-semibold text-xs uppercase tracking-widest text-slate-500">Description</TableHead>
-                                <TableHead className="text-right font-semibold text-xs uppercase tracking-widest text-emerald-600">Received (+)</TableHead>
-                                <TableHead className="text-right font-semibold text-xs uppercase tracking-widest text-rose-600">Payment (-)</TableHead>
-                                <TableHead className="text-right font-semibold text-xs uppercase tracking-widest text-blue-800">Balance</TableHead>
-                                <TableHead className="w-[50px]"></TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {filteredLedger.map((row) => (
-                                <TableRow key={row.id} className="hover:bg-slate-50/80 transition-colors">
-                                    <TableCell className="text-xs text-slate-500 font-mono">{row.date.slice(5)}</TableCell>
-                                    <TableCell className="font-mono text-xs font-bold text-slate-700">{row.id}</TableCell>
-                                    <TableCell className="font-mono text-xs text-slate-500 text-center">{row.pageNo}</TableCell>
-                                    <TableCell className="font-bold text-slate-900 text-sm">{row.account}</TableCell>
-                                    <TableCell>
-                                        <Badge variant="outline" className={`text-[10px] shadow-sm ${row.voucherType === "CRV" ? "bg-emerald-50 text-emerald-700 border-emerald-200" : row.voucherType === "CPV" ? "bg-rose-50 text-rose-700 border-rose-200" : "bg-slate-100 text-slate-600 border-slate-200"}`}>
-                                            {row.voucherType}
-                                        </Badge>
-                                    </TableCell>
-                                    <TableCell className="text-slate-600 text-xs font-medium">{row.mode}</TableCell>
-                                    <TableCell className="text-slate-600 text-sm">{row.desc}</TableCell>
-                                    <TableCell className="text-right font-mono font-bold text-emerald-600">
-                                        {row.debit > 0 ? `+${row.debit.toLocaleString()}` : "-"}
-                                    </TableCell>
-                                    <TableCell className="text-right font-mono font-bold text-rose-600">
-                                        {row.credit > 0 ? `-${row.credit.toLocaleString()}` : "-"}
-                                    </TableCell>
-                                    <TableCell className="text-right font-mono font-black text-slate-900 bg-slate-50/50">
-                                        {row.balance.toLocaleString()}
-                                    </TableCell>
-                                    <TableCell>
-                                        <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg" onClick={() => {
-                                            setEditingId(row.id);
-                                            setAmount(row.debit > 0 ? row.debit.toString() : row.credit.toString());
-                                            
-                                            setParty(row.account);
-                                            setActionType(row.voucherType === "CRV" ? "CRV" : "CPV");
-                                            setDate(row.date);
-                                            setPageNo(row.pageNo || "1");
-                                            // Restore payment mode so the form renders correctly
-                                            const restoredMode = row.mode === "Clear Parchi" ? "Clear Parchi" : "Cash";
-                                            setClearanceMode(restoredMode);
-                                            
-                                            if (restoredMode === "Clear Parchi") {
-                                                const match = row.desc.match(/\[(P-\d+)\]|Cleared against (P-\d+)/);
-                                                const pId = match ? (match[1] || match[2]) : "";
-                                                setSelectedParchiId(pId);
-                                                
-                                                // Extract the actual description without the parchi ID
-                                                if (match && match[1]) {
-                                                    setDesc(row.desc.replace(` [${pId}]`, ''));
-                                                } else {
-                                                    setDesc("");
-                                                }
-                                            } else {
-                                                setDesc(row.desc);
-                                                setSelectedParchiId("");
-                                            }
-                                        }}>
-                                            <Edit className="h-4 w-4" />
-                                        </Button>
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                            {filteredLedger.length === 0 && (
+
+                    <CardContent className="pt-4">
+                        <Table>
+                            <TableHeader>
                                 <TableRow>
-                                    <TableCell colSpan={11} className="h-24 text-center text-slate-500">
-                                        No transactions found.
-                                    </TableCell>
+                                    <TableHead>Date</TableHead>
+                                    <TableHead>Voucher</TableHead>
+                                    <TableHead>Page</TableHead>
+                                    <TableHead>Account</TableHead>
+                                    <TableHead>Type</TableHead>
+                                    <TableHead>Mode</TableHead>
+                                    <TableHead>Description</TableHead>
+                                    <TableHead className="text-right">Received (+)</TableHead>
+                                    <TableHead className="text-right">Payment (-)</TableHead>
+                                    <TableHead className="text-right">Balance</TableHead>
+                                    <TableHead></TableHead>
                                 </TableRow>
-                            )}
-                        </TableBody>
-                    </Table>
-                </div>
+                            </TableHeader>
+                            <TableBody>
+                                {filteredLedger.map((row) => (
+                                    <TableRow key={row.id}>
+                                        <TableCell className="text-slate-500">{row.date.slice(5)}</TableCell>
+                                        <TableCell className="font-medium text-slate-700">{row.id}</TableCell>
+                                        <TableCell className="text-slate-500">{row.pageNo}</TableCell>
+                                        <TableCell className="font-medium">{row.account}</TableCell>
+                                        <TableCell>
+                                            <Badge variant="outline" className={row.voucherType === "CRV" ? "bg-emerald-50 text-emerald-700 border-emerald-200" : row.voucherType === "CPV" ? "bg-rose-50 text-rose-700 border-rose-200" : "bg-slate-50 text-slate-600 border-slate-200"}>
+                                                {row.voucherType}
+                                            </Badge>
+                                        </TableCell>
+                                        <TableCell className="text-slate-600">{row.mode}</TableCell>
+                                        <TableCell className="text-slate-600">{row.desc}</TableCell>
+                                        <TableCell className="text-right font-medium text-emerald-600">
+                                            {row.debit > 0 ? `+${row.debit.toLocaleString()}` : "-"}
+                                        </TableCell>
+                                        <TableCell className="text-right font-medium text-rose-600">
+                                            {row.credit > 0 ? `-${row.credit.toLocaleString()}` : "-"}
+                                        </TableCell>
+                                        <TableCell className="text-right font-semibold text-slate-900">
+                                            {row.balance.toLocaleString()}
+                                        </TableCell>
+                                        <TableCell>
+                                            <Button variant="ghost" size="sm" onClick={() => {
+                                                setEditingId(row.id);
+                                                setAmount(row.debit > 0 ? row.debit.toString() : row.credit.toString());
+
+                                                setParty(row.account);
+                                                setActionType(row.voucherType === "CRV" ? "CRV" : "CPV");
+                                                setDate(row.date);
+                                                setPageNo(row.pageNo || "1");
+                                                const restoredMode = row.mode === "Clear Parchi" ? "Clear Parchi" : "Cash";
+                                                setClearanceMode(restoredMode);
+
+                                                if (restoredMode === "Clear Parchi") {
+                                                    const match = row.desc.match(/\[(P-\d+)\]|Cleared against (P-\d+)/);
+                                                    const pId = match ? (match[1] || match[2]) : "";
+                                                    setSelectedParchiId(pId);
+
+                                                    if (match && match[1]) {
+                                                        setDesc(row.desc.replace(` [${pId}]`, ''));
+                                                    } else {
+                                                        setDesc("");
+                                                    }
+                                                } else {
+                                                    setDesc(row.desc);
+                                                    setSelectedParchiId("");
+                                                }
+                                            }}>
+                                                <Edit className="h-4 w-4" />
+                                            </Button>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                                {filteredLedger.length === 0 && (
+                                    <TableRow>
+                                        <TableCell colSpan={11} className="h-24 text-center text-slate-500">
+                                            No transactions found.
+                                        </TableCell>
+                                    </TableRow>
+                                )}
+                            </TableBody>
+                        </Table>
+                    </CardContent>
+                </Card>
             </div>
         </DashboardLayout>
     );

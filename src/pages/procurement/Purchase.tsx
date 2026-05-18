@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Plus, Search, FileText, ArrowUpRight, ArrowDownLeft, ShoppingCart, Printer, Lock, Package } from "lucide-react";
 import { useState } from "react";
 import { PurchaseInvoiceModal } from "@/components/procurement/PurchaseInvoiceModal";
@@ -22,28 +23,24 @@ const STATUS_BADGE: Record<string, string> = {
 };
 
 function KpiCard({ label, value, sub, icon: Icon, accent }: { label: string; value: string; sub: string; icon: any; accent: "blue" | "emerald" | "rose" | "amber" }) {
-    const colors = {
-        blue: { bg: "from-blue-50 via-white to-white", icon: "bg-blue-100 text-blue-700", bar: "bg-blue-400" },
-        emerald: { bg: "from-emerald-50 via-white to-white", icon: "bg-emerald-100 text-emerald-700", bar: "bg-emerald-400" },
-        rose: { bg: "from-rose-50 via-white to-white", icon: "bg-rose-100 text-rose-700", bar: "bg-rose-400" },
-        amber: { bg: "from-amber-50 via-white to-white", icon: "bg-amber-100 text-amber-700", bar: "bg-amber-400" },
+    const iconColors = {
+        blue: "text-blue-500",
+        emerald: "text-emerald-500",
+        rose: "text-rose-500",
+        amber: "text-amber-500",
     }[accent];
 
     return (
-        <div className={`relative overflow-hidden rounded-2xl p-5 flex flex-col gap-3 bg-gradient-to-br ${colors.bg} border border-white/60`}
-            style={{ boxShadow: "0 2px 0 0 rgba(0,0,0,0.05), 0 8px 24px -4px rgba(0,0,0,0.10), inset 0 1px 0 rgba(255,255,255,0.9)" }}>
-            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white to-transparent opacity-80" />
-            <div className={`absolute inset-x-2 bottom-0 h-0.5 ${colors.bar} rounded-full opacity-20 blur-sm`} />
-            <div className="flex items-start justify-between">
-                <p className="text-xs font-semibold uppercase tracking-widest text-slate-500">{label}</p>
-                <div className={`p-2 rounded-xl ${colors.icon} shadow-sm`}
-                    style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.10), inset 0 1px 0 rgba(255,255,255,0.5)" }}>
-                    <Icon className="h-4 w-4" />
-                </div>
-            </div>
-            <div className="font-bold text-2xl tracking-tight text-slate-900 leading-none">{value}</div>
-            <div className="text-xs font-medium text-slate-400">{sub}</div>
-        </div>
+        <Card className="shadow-soft border-slate-100 bg-white transition-all duration-300 hover:shadow-md hover:-translate-y-1 hover:border-slate-200">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">{label}</CardTitle>
+                <Icon className={`h-4 w-4 ${iconColors}`} />
+            </CardHeader>
+            <CardContent>
+                <div className="text-2xl font-bold">{value}</div>
+                <p className="text-xs text-slate-500">{sub}</p>
+            </CardContent>
+        </Card>
     );
 }
 
@@ -146,30 +143,26 @@ export default function Purchase() {
 
     return (
         <DashboardLayout>
-            <div className="space-y-8">
+            <div className="space-y-6">
                 {/* ── HEADER ── */}
-                <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
-                        <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-1">Procurement</p>
-                        <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">Purchase</h1>
-                        <p className="text-slate-500 mt-1 text-sm">Manage Purchase Orders, Invoices, and Supplier Returns.</p>
+                        <h1 className="text-3xl font-bold tracking-tight text-slate-900">Procurement</h1>
+                        <p className="text-slate-500">Manage Purchase Orders, Invoices, and Supplier Returns</p>
                     </div>
                     <div className="flex items-center gap-2">
                         {activeTab === 'orders' && (
-                            <Button className="h-9 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-md" onClick={() => setPoOpen(true)}
-                                style={{ boxShadow: "0 4px 12px rgba(37,99,235,0.30)" }}>
+                            <Button className="bg-blue-600 hover:bg-blue-700 shadow-soft" onClick={() => setPoOpen(true)}>
                                 <Plus className="h-4 w-4 mr-2" /> New Order
                             </Button>
                         )}
                         {activeTab === 'invoices' && (
-                            <Button className="h-9 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-700 text-white shadow-md" onClick={() => setInvoiceOpen(true)}
-                                style={{ boxShadow: "0 4px 12px rgba(5,150,105,0.30)" }}>
+                            <Button className="bg-blue-600 hover:bg-blue-700 shadow-soft" onClick={() => setInvoiceOpen(true)}>
                                 <Plus className="h-4 w-4 mr-2" /> New Invoice
                             </Button>
                         )}
                         {activeTab === 'returns' && (
-                            <Button className="h-9 rounded-xl bg-gradient-to-r from-rose-600 to-rose-700 text-white shadow-md" onClick={() => setReturnOpen(true)}
-                                style={{ boxShadow: "0 4px 12px rgba(225,29,72,0.30)" }}>
+                            <Button className="bg-blue-600 hover:bg-blue-700 shadow-soft" onClick={() => setReturnOpen(true)}>
                                 <Plus className="h-4 w-4 mr-2" /> New Return
                             </Button>
                         )}
@@ -177,7 +170,7 @@ export default function Purchase() {
                 </div>
 
                 {/* ── KPI ROW ── */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     <KpiCard label="Open Orders" value={`${orders.filter(o => o.status !== 'Closed').length} Orders`} sub="Awaiting fulfillment" icon={ShoppingCart} accent="blue" />
                     <KpiCard label="Pending Invoices" value={`${invoices.filter(i => i.status === 'Pending Rate').length} Invoices`} sub="Rate not yet fixed" icon={FileText} accent="amber" />
                     <KpiCard label="Total Committed" value="₨ 6.3M" sub="Across all open POs" icon={Package} accent="emerald" />
@@ -191,174 +184,163 @@ export default function Purchase() {
                 <PrintPOSheet open={printOpen} onOpenChange={setPrintOpen} order={selectedPrintOrder} />
 
                 {/* ── TABS ── */}
-                <Tabs defaultValue="orders" onValueChange={(v) => { setActiveTab(v); setSearchQuery(""); }} className="space-y-5">
+                <Tabs defaultValue="orders" onValueChange={(v) => { setActiveTab(v); setSearchQuery(""); }} className="space-y-4">
                     <div className="flex items-center justify-between gap-4 flex-wrap">
-                        <TabsList className="bg-slate-100/80 p-1 rounded-xl border border-slate-200 h-auto">
-                            <TabsTrigger value="orders" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-blue-700 px-5 py-2 text-sm font-semibold gap-2">
-                                <ShoppingCart className="h-3.5 w-3.5" /> Purchase Orders
+                        <TabsList className="bg-slate-100 p-1">
+                            <TabsTrigger value="orders" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">
+                                <ShoppingCart className="h-4 w-4 mr-2" /> Purchase Orders
                             </TabsTrigger>
-                            <TabsTrigger value="invoices" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-emerald-700 px-5 py-2 text-sm font-semibold gap-2">
-                                <ArrowDownLeft className="h-3.5 w-3.5" /> Inward Supply
+                            <TabsTrigger value="invoices" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">
+                                <ArrowDownLeft className="h-4 w-4 mr-2" /> Inward Supply
                             </TabsTrigger>
-                            <TabsTrigger value="returns" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-rose-700 px-5 py-2 text-sm font-semibold gap-2">
-                                <ArrowUpRight className="h-3.5 w-3.5" /> Debit Notes
+                            <TabsTrigger value="returns" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">
+                                <ArrowUpRight className="h-4 w-4 mr-2" /> Debit Notes
                             </TabsTrigger>
                         </TabsList>
 
-                        {/* Search */}
                         <div className="relative">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-500" />
                             <Input value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
-                                className="pl-9 h-10 w-64 rounded-xl bg-white border-slate-200 shadow-sm text-sm"
+                                className="pl-9 w-[250px]"
                                 placeholder="Search ID, supplier..." />
                         </div>
                     </div>
 
                     {/* ── ORDERS TAB ── */}
                     <TabsContent value="orders">
-                        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
-                            style={{ boxShadow: "0 1px 0 0 rgba(0,0,0,0.04), 0 4px 16px -2px rgba(0,0,0,0.07)" }}>
-                            <div className="mb-5">
-                                <h3 className="font-bold text-slate-900 text-base">Active Purchase Orders</h3>
-                                <p className="text-xs text-slate-400 mt-0.5">{filteredOrders.length} order{filteredOrders.length !== 1 ? 's' : ''} found</p>
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-                                {filteredOrders.map((po) => (
-                                    <div key={po.id} className="rounded-xl border border-slate-200 bg-white overflow-hidden flex flex-col group hover:shadow-md hover:border-blue-300 transition-all"
-                                        style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 1px 0 rgba(0,0,0,0.03)" }}>
-                                        {/* Top accent bar */}
-                                        <div className={`h-1 w-full ${po.status === 'Closed' ? 'bg-emerald-400' : po.status === 'Partially Fulfilled' ? 'bg-blue-400' : 'bg-slate-300'}`} />
+                        <Card className="shadow-soft border-slate-100 transition-all duration-300 hover:shadow-md hover:-translate-y-1 hover:border-slate-200">
+                            <CardHeader>
+                                <CardTitle>Active Purchase Orders</CardTitle>
+                                <CardDescription>{filteredOrders.length} order{filteredOrders.length !== 1 ? 's' : ''} found</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                                    {filteredOrders.map((po) => (
+                                        <Card key={po.id} className="shadow-soft border-slate-100 bg-white overflow-hidden flex flex-col">
+                                            <div className={`h-1 w-full ${po.status === 'Closed' ? 'bg-emerald-500' : po.status === 'Partially Fulfilled' ? 'bg-blue-500' : 'bg-slate-300'}`} />
+                                            <CardHeader className="p-4 pb-2 border-b border-slate-50">
+                                                <div className="flex justify-between items-start">
+                                                    <div className="font-mono font-bold text-sm">{po.id}</div>
+                                                    <Badge variant="outline" className={`text-xs ${STATUS_BADGE[po.status] || ''}`}>{po.status}</Badge>
+                                                </div>
+                                                <CardTitle className="text-base mt-2">{po.supplier}</CardTitle>
+                                                <CardDescription className="font-mono text-xs">{po.date}</CardDescription>
+                                            </CardHeader>
 
-                                        <div className="p-4 border-b border-dashed border-slate-100 bg-gradient-to-br from-slate-50 to-white">
-                                            <div className="flex justify-between items-start">
-                                                <div className="font-mono font-bold text-base text-blue-700 tracking-tight">{po.id}</div>
-                                                <Badge variant="outline" className={`text-xs shadow-sm ${STATUS_BADGE[po.status] || ''}`}>{po.status}</Badge>
-                                            </div>
-                                            <div className="font-semibold text-slate-800 mt-1.5 text-sm">{po.supplier}</div>
-                                            <div className="text-xs text-slate-400 font-mono mt-1">{po.date}</div>
-                                        </div>
+                                            <CardContent className="p-4 flex-1 space-y-4">
+                                                <div>
+                                                    <div className="flex justify-between text-xs mb-1.5">
+                                                        <span className="text-slate-500">Fulfillment</span>
+                                                        <span className="font-medium text-slate-700">{Math.min(100, Math.round((po.total_fulfilled_qty / po.total_ordered_qty) * 100))}%</span>
+                                                    </div>
+                                                    <Progress value={Math.min(100, (po.total_fulfilled_qty / po.total_ordered_qty) * 100)} className="h-2" />
+                                                </div>
+                                                <div className="grid grid-cols-2 gap-2 text-sm">
+                                                    <div>
+                                                        <div className="text-xs text-slate-500">Ordered</div>
+                                                        <div className="font-medium">{po.total_ordered_qty.toLocaleString()} kg</div>
+                                                    </div>
+                                                    <div>
+                                                        <div className="text-xs text-slate-500">Value</div>
+                                                        <div className="font-medium">₨ {(po.amount / 1000000).toFixed(1)}M</div>
+                                                    </div>
+                                                </div>
+                                            </CardContent>
 
-                                        <div className="p-4 flex-1 space-y-3 relative">
-                                            {po.status === "Closed" && (
-                                                <div className="absolute inset-0 flex items-center justify-center opacity-[0.04] pointer-events-none">
-                                                    <div className="border-4 border-emerald-500 text-emerald-500 text-4xl font-black uppercase tracking-widest p-2 -rotate-12 rounded-lg">FULFILLED</div>
-                                                </div>
-                                            )}
-                                            <div>
-                                                <div className="flex justify-between text-xs mb-1.5">
-                                                    <span className="uppercase tracking-widest font-bold text-slate-400 text-[9px]">Fulfillment</span>
-                                                    <span className="font-bold text-slate-700">{Math.min(100, Math.round((po.total_fulfilled_qty / po.total_ordered_qty) * 100))}%</span>
-                                                </div>
-                                                <Progress value={Math.min(100, (po.total_fulfilled_qty / po.total_ordered_qty) * 100)} className="h-1.5" />
-                                            </div>
-                                            <div className="grid grid-cols-2 gap-3">
-                                                <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-100">
-                                                    <div className="text-[9px] uppercase tracking-widest font-bold text-slate-400 mb-1">Ordered</div>
-                                                    <div className="font-mono font-bold text-slate-700 text-sm">{po.total_ordered_qty.toLocaleString()} <span className="text-[9px] text-slate-400">kg</span></div>
-                                                </div>
-                                                <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-100">
-                                                    <div className="text-[9px] uppercase tracking-widest font-bold text-slate-400 mb-1">Value</div>
-                                                    <div className="font-mono font-bold text-emerald-600 text-sm">₨ {(po.amount / 1000000).toFixed(1)}M</div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div className="p-3 bg-slate-50/80 border-t border-slate-100 flex items-center justify-between">
-                                            {po.status !== "Closed" && (
-                                                <Button size="sm" variant="outline" className="h-8 text-xs rounded-lg text-amber-600 border-amber-200 hover:bg-amber-50"
-                                                    onClick={() => handleForceClose(po.id)}>
-                                                    <Lock className="h-3 w-3 mr-1" /> Close
+                                            <div className="p-3 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
+                                                {po.status !== "Closed" ? (
+                                                    <Button size="sm" variant="outline" className="text-xs"
+                                                        onClick={() => handleForceClose(po.id)}>
+                                                        <Lock className="h-3 w-3 mr-2" /> Close
+                                                    </Button>
+                                                ) : <div />}
+                                                <Button size="icon" variant="ghost" className="h-8 w-8 text-slate-500"
+                                                    onClick={() => { setSelectedPrintOrder(po); setPrintOpen(true); }}>
+                                                    <Printer className="h-4 w-4" />
                                                 </Button>
-                                            )}
-                                            <Button size="icon" variant="ghost" className="h-8 w-8 ml-auto text-slate-400 hover:text-slate-700"
-                                                onClick={() => { setSelectedPrintOrder(po); setPrintOpen(true); }}>
-                                                <Printer className="h-3.5 w-3.5" />
-                                            </Button>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
+                                            </div>
+                                        </Card>
+                                    ))}
+                                </div>
+                            </CardContent>
+                        </Card>
                     </TabsContent>
 
                     {/* ── INVOICES TAB ── */}
                     <TabsContent value="invoices">
-                        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
-                            style={{ boxShadow: "0 1px 0 0 rgba(0,0,0,0.04), 0 4px 16px -2px rgba(0,0,0,0.07)" }}>
-                            <div className="mb-5">
-                                <h3 className="font-bold text-slate-900 text-base">Inward Supply — Invoices</h3>
-                                <p className="text-xs text-slate-400 mt-0.5">{filteredInvoices.length} invoice{filteredInvoices.length !== 1 ? 's' : ''} found</p>
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-                                {filteredInvoices.map((inv) => (
-                                    <div key={inv.id} className="rounded-xl border border-slate-200 bg-white overflow-hidden flex flex-col group hover:shadow-md hover:border-emerald-300 transition-all"
-                                        style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 1px 0 rgba(0,0,0,0.03)" }}>
-                                        <div className={`h-1 w-full ${inv.status === 'Completed' ? 'bg-emerald-400' : 'bg-amber-400'}`} />
-                                        <div className="absolute left-0 top-0 bottom-0 w-[3px]" />
+                        <Card className="shadow-soft border-slate-100 transition-all duration-300 hover:shadow-md hover:-translate-y-1 hover:border-slate-200">
+                            <CardHeader>
+                                <CardTitle>Inward Supply — Invoices</CardTitle>
+                                <CardDescription>{filteredInvoices.length} invoice{filteredInvoices.length !== 1 ? 's' : ''} found</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                                    {filteredInvoices.map((inv) => (
+                                        <Card key={inv.id} className="shadow-soft border-slate-100 bg-white overflow-hidden flex flex-col">
+                                            <div className={`h-1 w-full ${inv.status === 'Completed' ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+                                            <CardHeader className="p-4 pb-2 border-b border-slate-50">
+                                                <div className="flex justify-between items-start">
+                                                    <div className="font-mono font-bold text-sm">{inv.id}</div>
+                                                    <Badge className={`text-xs border ${STATUS_BADGE[inv.status] || 'bg-slate-100 text-slate-600 border-slate-300'}`}>{inv.status}</Badge>
+                                                </div>
+                                                <CardTitle className="text-base mt-2">{inv.supplier}</CardTitle>
+                                                <CardDescription className="font-mono text-xs">{inv.date}</CardDescription>
+                                            </CardHeader>
 
-                                        <div className="p-4 border-b border-dashed border-slate-100 bg-gradient-to-br from-emerald-50/50 to-white">
-                                            <div className="flex justify-between items-start">
-                                                <div className="font-mono font-bold text-base text-emerald-700 tracking-tight">{inv.id}</div>
-                                                <Badge className={`text-xs border ${STATUS_BADGE[inv.status] || 'bg-slate-100 text-slate-600 border-slate-300'}`}>{inv.status}</Badge>
+                                            <CardContent className="p-4 flex-1 flex flex-col items-center justify-center py-6">
+                                                <div className="text-xs text-slate-500 mb-1">Invoice Amount</div>
+                                                <div className="font-bold text-2xl">{inv.amount === 0 ? "—" : `₨ ${(inv.amount / 1000).toFixed(0)}k`}</div>
+                                                <div className="text-xs text-slate-500 mt-1">{inv.weight}</div>
+                                            </CardContent>
+
+                                            <div className="p-3 bg-slate-50 border-t border-slate-100 flex justify-end">
+                                                <Button size="sm" variant="ghost" className="text-xs">View Details</Button>
                                             </div>
-                                            <div className="font-semibold text-slate-800 mt-1.5 text-sm">{inv.supplier}</div>
-                                            <div className="text-xs text-slate-400 font-mono mt-1">{inv.date}</div>
-                                        </div>
-
-                                        <div className="p-4 flex-1 flex flex-col items-center justify-center py-8 gap-1">
-                                            <div className="text-[9px] uppercase tracking-widest font-bold text-slate-400">Invoice Amount</div>
-                                            <div className="font-mono font-black text-3xl text-slate-800">{inv.amount === 0 ? "—" : `₨ ${(inv.amount / 1000).toFixed(0)}k`}</div>
-                                            <div className="text-xs text-slate-500 font-mono mt-1">{inv.weight}</div>
-                                        </div>
-
-                                        <div className="p-3 bg-slate-50/80 border-t border-slate-100 flex justify-end">
-                                            <Button size="sm" variant="ghost" className="text-xs text-blue-600 hover:bg-blue-50 rounded-lg">View Details</Button>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
+                                        </Card>
+                                    ))}
+                                </div>
+                            </CardContent>
+                        </Card>
                     </TabsContent>
 
                     {/* ── RETURNS TAB ── */}
                     <TabsContent value="returns">
-                        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
-                            style={{ boxShadow: "0 1px 0 0 rgba(0,0,0,0.04), 0 4px 16px -2px rgba(0,0,0,0.07)" }}>
-                            <div className="mb-5">
-                                <h3 className="font-bold text-rose-700 text-base">Debit Notes</h3>
-                                <p className="text-xs text-slate-400 mt-0.5">Stock returns and financial adjustments</p>
-                            </div>
-                            {returns.length === 0 ? (
-                                <div className="py-16 text-center flex flex-col items-center gap-3 bg-rose-50/30 rounded-xl border border-dashed border-rose-200">
-                                    <ArrowUpRight className="h-10 w-10 text-rose-200" />
-                                    <p className="font-semibold text-slate-500">No debit notes recorded yet</p>
-                                </div>
-                            ) : (
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-                                    {returns.map(ret => (
-                                        <div key={ret.id} className="rounded-xl border border-slate-200 bg-white overflow-hidden flex flex-col group hover:shadow-md hover:border-rose-300 transition-all"
-                                            style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
-                                            <div className="h-1 w-full bg-rose-400" />
-                                            <div className="p-4 border-b border-dashed border-slate-100 bg-gradient-to-br from-rose-50/50 to-white">
-                                                <div className="font-mono font-bold text-base text-rose-700 tracking-tight">{ret.id}</div>
-                                                <div className="font-semibold text-slate-800 mt-1.5 text-sm">{ret.supplier}</div>
-                                                <div className="text-xs text-slate-400 font-mono mt-1">{ret.date}</div>
-                                                <Badge className="mt-2 bg-rose-100 text-rose-800 border-rose-200 text-xs">{ret.reason}</Badge>
-                                            </div>
-                                            <div className="p-4 flex-1 flex flex-col items-center justify-center py-8 gap-1">
-                                                <div className="text-[9px] uppercase tracking-widest font-bold text-rose-300">Debit Amount</div>
-                                                <div className="font-mono font-black text-3xl text-rose-600">₨ {ret.amount.toLocaleString()}</div>
-                                            </div>
-                                            <div className="p-3 bg-slate-50/80 border-t border-slate-100 flex justify-end">
-                                                <Button size="sm" variant="ghost" className="text-xs text-slate-600 hover:bg-slate-100 rounded-lg">
-                                                    <Printer className="h-3.5 w-3.5 mr-1" /> Print Note
-                                                </Button>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
+                        <Card className="shadow-soft border-slate-100 transition-all duration-300 hover:shadow-md hover:-translate-y-1 hover:border-slate-200">
+                            <CardHeader>
+                                <CardTitle>Debit Notes</CardTitle>
+                                <CardDescription>Stock returns and financial adjustments</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                {returns.length === 0 ? (
+                                    <div className="py-16 text-center text-slate-500">
+                                        No debit notes recorded yet.
+                                    </div>
+                                ) : (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                                        {returns.map(ret => (
+                                            <Card key={ret.id} className="shadow-soft border-slate-100 bg-white overflow-hidden flex flex-col">
+                                                <div className="h-1 w-full bg-rose-500" />
+                                                <CardHeader className="p-4 pb-2 border-b border-slate-50">
+                                                    <div className="font-mono font-bold text-sm">{ret.id}</div>
+                                                    <CardTitle className="text-base mt-2">{ret.supplier}</CardTitle>
+                                                    <CardDescription className="font-mono text-xs">{ret.date}</CardDescription>
+                                                    <Badge variant="outline" className="mt-2 w-fit bg-slate-50 text-slate-700">{ret.reason}</Badge>
+                                                </CardHeader>
+                                                <CardContent className="p-4 flex-1 flex flex-col items-center justify-center py-6">
+                                                    <div className="text-xs text-slate-500 mb-1">Debit Amount</div>
+                                                    <div className="font-bold text-2xl">₨ {ret.amount.toLocaleString()}</div>
+                                                </CardContent>
+                                                <div className="p-3 bg-slate-50 border-t border-slate-100 flex justify-end">
+                                                    <Button size="sm" variant="ghost" className="text-xs">
+                                                        <Printer className="h-4 w-4 mr-2" /> Print Note
+                                                    </Button>
+                                                </div>
+                                            </Card>
+                                        ))}
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
                     </TabsContent>
                 </Tabs>
             </div>

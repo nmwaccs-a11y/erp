@@ -198,63 +198,93 @@ export default function ParchiRegister() {
                         ) : (
                             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                                 {filteredParchis.map((p) => (
-                                    <div key={p.id} className="relative bg-[#fffdf5] border border-[#e5e0d8] shadow-sm p-5 flex flex-col gap-3 group transition-all hover:shadow-md overflow-hidden">
-                                        {/* Top torn edge simulation */}
-                                        <div className="absolute top-0 left-0 right-0 h-1 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4IiBoZWlnaHQ9IjQiPjxwb2x5Z29uIHBvaW50cz0iMCwwIDQsNCA4LDAiIGZpbGw9IiNlNWUwZDgiLz48L3N2Zz4=')] bg-repeat-x opacity-50 -mt-[1px]"></div>
+                                    <div key={p.id} className="relative bg-white border border-slate-200 shadow-sm rounded-lg flex flex-col group transition-all hover:shadow-md hover:border-slate-300 hover:-translate-y-0.5 overflow-hidden">
                                         
-                                        {/* Watermark Stamp */}
-                                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 -rotate-12 pointer-events-none opacity-[0.07] select-none z-0 w-full text-center">
-                                            <div className={`text-5xl font-black uppercase tracking-widest leading-tight ${p.status === 'Cleared' ? 'text-emerald-900' : p.status === 'Pending' ? 'text-rose-900' : 'text-blue-900'}`}>
-                                                {p.status.split(' ').map((word, i) => <div key={i}>{word}</div>)}
+                                        {/* Subtle dot pattern background */}
+                                        <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, black 1px, transparent 0)', backgroundSize: '16px 16px' }} />
+
+                                        {/* Top section: The Header & Details */}
+                                        <div className="p-5 flex flex-col gap-4 relative z-10 bg-[#fdfdfc]">
+                                            {/* Header row */}
+                                            <div className="flex justify-between items-start">
+                                                <div className="flex flex-col gap-1">
+                                                    <div className="inline-flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-slate-400 uppercase">
+                                                        <span className="w-1.5 h-1.5 rounded-full bg-slate-300" />
+                                                        {p.parchi_type}
+                                                    </div>
+                                                    <div className="text-lg font-mono font-bold text-slate-800 tracking-tight">{p.id}</div>
+                                                    {p.parchi_type === "Bank Cheque" && <div className="text-[10px] font-mono font-bold tracking-wider text-blue-600 mt-1">CHQ: {p.cheque_no} • {p.bank}</div>}
+                                                </div>
+                                                {/* Status Stamp */}
+                                                <div className={`px-2 py-1 rounded border-2 border-dashed transform rotate-[-8deg] text-xs font-black uppercase tracking-widest ${p.status === 'Cleared' ? 'text-emerald-600 border-emerald-600/30' : p.status === 'Pending' ? 'text-rose-600 border-rose-600/30' : 'text-blue-600 border-blue-600/30'}`}>
+                                                    {p.status}
+                                                </div>
+                                            </div>
+
+                                            {/* Body Info */}
+                                            <div className="bg-white rounded-md border border-slate-100 p-3 shadow-sm space-y-3">
+                                                <div>
+                                                    <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Pay To / Receive From</div>
+                                                    <div className="font-semibold text-slate-900 text-sm leading-none">{p.party}</div>
+                                                </div>
+                                                <div className="flex items-center justify-between border-t border-slate-50 pt-2">
+                                                    <div>
+                                                        <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Issue Date</div>
+                                                        <div className="text-xs font-mono font-medium text-slate-600">{format(new Date(p.date), "dd MMM yyyy")}</div>
+                                                    </div>
+                                                    <div className="text-right">
+                                                        <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Due Date</div>
+                                                        <div className="text-xs font-mono font-bold text-rose-600">{format(new Date(p.due_date), "dd MMM yyyy")}</div>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
 
-                                        {/* Header */}
-                                        <div className="flex justify-between items-start border-b-2 border-dashed border-[#dcd6cb] pb-3 relative z-10">
-                                            <div>
-                                                <div className="text-[10px] font-bold tracking-widest text-[#a89f91] uppercase">Parchi No.</div>
-                                                <div className="text-lg font-mono font-bold text-slate-900">{p.id}</div>
-                                                {p.parchi_type === "Bank Cheque" && <div className="text-[10px] font-bold tracking-widest text-blue-600 uppercase mt-1">CHQ: {p.cheque_no} • {p.bank}</div>}
-                                            </div>
-                                            <div className="text-right">
-                                                <div className="text-[10px] font-bold tracking-widest text-[#a89f91] uppercase">Issue Date</div>
-                                                <div className="text-sm font-mono text-slate-800">{format(new Date(p.date), "dd MMM yyyy")}</div>
-                                            </div>
+                                        {/* Tear line with ticket holes */}
+                                        <div className="relative h-4 w-full bg-[#fdfdfc]">
+                                            <div className="absolute top-1/2 left-0 right-0 border-t-[1.5px] border-dashed border-slate-200"></div>
+                                            {/* Left hole */}
+                                            <div className="absolute left-[-8px] top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-slate-50 border border-slate-200 shadow-inner"></div>
+                                            {/* Right hole */}
+                                            <div className="absolute right-[-8px] top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-slate-50 border border-slate-200 shadow-inner"></div>
                                         </div>
 
-                                        {/* Body */}
-                                        <div className="py-2 space-y-4 relative z-10 flex-1">
-                                            <div>
-                                                <div className="text-[10px] font-bold tracking-widest text-[#a89f91] uppercase mb-1">Party Name</div>
-                                                <div className="font-bold text-slate-900 leading-tight">{p.party}</div>
+                                        {/* Bottom Section: Financials (The Stub) */}
+                                        <div className="p-5 flex flex-col gap-3 relative z-10 bg-white">
+                                            <div className="flex justify-between items-end">
+                                                <div>
+                                                    <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Cleared Amount</div>
+                                                    <div className="text-sm font-mono font-medium text-slate-500">₨ {p.cleared_amount.toLocaleString()}</div>
+                                                </div>
+                                                <div className="text-right">
+                                                    <div className="text-[9px] font-bold text-blue-600 uppercase tracking-widest mb-0.5">Balance</div>
+                                                    <div className="text-2xl font-mono font-black text-slate-900 tracking-tight leading-none">₨ {p.available_balance.toLocaleString()}</div>
+                                                </div>
                                             </div>
                                             
-                                            <div className="grid grid-cols-2 gap-4 bg-white/50 p-3 rounded-sm border border-[#f0ebe1]">
-                                                <div>
-                                                    <div className="text-[10px] font-bold tracking-widest text-[#a89f91] uppercase mb-1">Due Date</div>
-                                                    <div className="text-sm font-mono text-rose-700 font-bold">{format(new Date(p.due_date), "dd MMM yyyy")}</div>
+                                            {/* Action Buttons & Barcode */}
+                                            <div className="flex justify-between items-center mt-2 pt-3 border-t border-slate-100">
+                                                {/* Fake Barcode lines */}
+                                                <div className="flex gap-[2px] items-center h-5 opacity-20">
+                                                    <div className="w-0.5 h-full bg-slate-900"></div>
+                                                    <div className="w-1 h-full bg-slate-900"></div>
+                                                    <div className="w-0.5 h-full bg-slate-900"></div>
+                                                    <div className="w-[3px] h-full bg-slate-900"></div>
+                                                    <div className="w-0.5 h-full bg-slate-900"></div>
+                                                    <div className="w-1 h-full bg-slate-900"></div>
+                                                    <div className="w-0.5 h-full bg-slate-900"></div>
+                                                    <div className="w-1.5 h-full bg-slate-900"></div>
+                                                    <div className="w-0.5 h-full bg-slate-900"></div>
                                                 </div>
-                                                <div>
-                                                    <div className="text-[10px] font-bold tracking-widest text-[#a89f91] uppercase mb-1">Total Amt</div>
-                                                    <div className="text-sm font-mono font-bold text-slate-900">₨ {p.total_amount.toLocaleString()}</div>
-                                                </div>
-                                            </div>
-                                        </div>
 
-                                        {/* Footer / Balance */}
-                                        <div className="pt-3 border-t-2 border-dashed border-[#dcd6cb] flex justify-between items-end relative z-10">
-                                            <div>
-                                                <div className="text-[10px] font-bold tracking-widest text-[#a89f91] uppercase mb-0.5">Cleared: ₨ {p.cleared_amount.toLocaleString()}</div>
-                                                <div className="text-[10px] font-bold tracking-widest text-blue-900 uppercase">Avail Balance</div>
-                                                <div className="text-xl font-mono font-black text-blue-900">₨ {p.available_balance.toLocaleString()}</div>
-                                            </div>
-                                            <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <Button variant="outline" size="icon" className="h-8 w-8 bg-white border-[#e5e0d8] text-slate-600 hover:text-blue-600" onClick={() => handleOpenEdit(p)}>
-                                                    <Edit className="h-4 w-4" />
-                                                </Button>
-                                                <Button variant="outline" size="icon" className="h-8 w-8 bg-white border-[#e5e0d8] text-slate-600 hover:text-rose-600" onClick={() => handleDelete(p.id)}>
-                                                    <Trash2 className="h-4 w-4" />
-                                                </Button>
+                                                <div className="flex gap-2">
+                                                    <Button variant="outline" size="sm" className="h-7 px-2 text-[10px] font-semibold text-slate-500 hover:text-blue-600 border-slate-200" onClick={() => handleOpenEdit(p)}>
+                                                        <Edit className="h-3 w-3 mr-1" /> Edit
+                                                    </Button>
+                                                    <Button variant="outline" size="sm" className="h-7 px-2 text-[10px] font-semibold text-slate-500 hover:text-rose-600 border-slate-200" onClick={() => handleDelete(p.id)}>
+                                                        <Trash2 className="h-3 w-3 mr-1" /> Void
+                                                    </Button>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>

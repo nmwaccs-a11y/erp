@@ -2,6 +2,7 @@ import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Plus, Replace, Search, Pencil, Filter, X } from "lucide-react";
 import { useState, useMemo } from "react";
 import { CreateTriangleTradeModal } from "@/components/sales/CreateTriangleTradeModal";
@@ -224,72 +225,70 @@ export default function TriangleTrade() {
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                         {filteredTrades.map((trade) => (
-                            <div key={trade.id} className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col relative group hover:shadow-md hover:border-blue-300 transition-all">
-                                {/* Top Edge Texture */}
-                                <div className="h-2 w-full bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4IiBoZWlnaHQ9IjgiPgo8cmVjdCB3aWR0aD0iOCIgaGVpZ2h0PSI4IiBmaWxsPSIjZmZmIiAvPgo8cGF0aCBkPSJNMCAwTDEgMkwyIDBMMyAybDQgMEg4ViA4SDBaIiBmaWxsPSIjZjFmNWY5Ii8+Cjwvc3ZnPg==')] opacity-50 absolute top-0"></div>
-
-                                {/* Header */}
-                                <div className="p-5 border-b border-dashed border-slate-200 bg-[#faf9f6]">
-                                    <div className="flex justify-between items-start mb-2">
-                                        <div className="font-mono font-bold text-lg tracking-tight text-blue-700">{trade.id}</div>
+                            <Card key={trade.id} className="shadow-soft border-slate-100 flex flex-col hover:border-blue-200 transition-colors">
+                                <CardHeader className="pb-3 border-b border-slate-50 bg-slate-50/50">
+                                    <div className="flex justify-between items-start">
+                                        <div>
+                                            <CardTitle className="font-mono text-base text-blue-700">{trade.id}</CardTitle>
+                                            <CardDescription className="font-mono mt-1 text-xs">{trade.dateLabel}</CardDescription>
+                                        </div>
                                         <Badge variant="outline" className={`shadow-sm ${STATUS_COLORS[trade.status] || "bg-slate-50 text-slate-600"}`}>
                                             {trade.status}
                                         </Badge>
                                     </div>
-                                    <div className="text-xs text-slate-500 font-mono mt-1">{trade.dateLabel}</div>
-                                </div>
+                                </CardHeader>
 
-                                {/* Body */}
-                                <div className="p-5 flex-1 bg-white relative space-y-4">
-                                    <div className="grid grid-cols-2 gap-4 text-xs font-mono text-slate-500 border-b pb-3 mb-2">
-                                        <div><span className="font-bold text-slate-400">BILTY:</span> {trade.biltyNo}</div>
-                                        <div><span className="font-bold text-slate-400">VEH:</span> {trade.vehicleNo}</div>
+                                <CardContent className="pt-4 flex-1 flex flex-col space-y-4">
+                                    <div className="flex justify-between text-[11px] font-mono text-slate-500 bg-slate-50 p-2 rounded-md border border-slate-100">
+                                        <div><span className="font-semibold text-slate-400">BILTY:</span> {trade.biltyNo}</div>
+                                        <div><span className="font-semibold text-slate-400">VEH:</span> {trade.vehicleNo}</div>
                                     </div>
 
-                                    <div>
-                                        <div className="text-[10px] uppercase tracking-widest font-bold text-slate-400 mb-1">Source (Customer)</div>
-                                        <div className="font-bold text-slate-800">{trade.source}</div>
-                                    </div>
-
-                                    <div className="flex justify-center">
-                                        <Replace className="h-5 w-5 text-slate-300 transform rotate-90" />
-                                    </div>
-
-                                    <div>
-                                        <div className="text-[10px] uppercase tracking-widest font-bold text-slate-400 mb-1">Destination (Vendor)</div>
-                                        <div className="font-bold text-slate-800">{trade.destination}</div>
-                                    </div>
-                                </div>
-
-                                {/* Footer */}
-                                <div className="p-3 bg-slate-50 border-t border-slate-200">
-                                    <div className="flex items-center justify-between">
-                                        <div className="text-xs font-bold text-slate-600">
-                                            Net: <span className="font-mono text-blue-600 font-black">{trade.netWeight}</span>
+                                    <div className="space-y-3">
+                                        <div>
+                                            <div className="text-[10px] uppercase tracking-widest font-semibold text-slate-400 mb-0.5">Source (Customer)</div>
+                                            <div className="text-sm font-semibold text-slate-900">{trade.source}</div>
                                         </div>
-                                        <div className="text-xs font-bold text-slate-600">
-                                            @ <span className="font-mono text-slate-700">{trade.rate}</span>
+                                        
+                                        <div className="flex items-center gap-3">
+                                            <div className="flex-1 h-px bg-slate-100"></div>
+                                            <Replace className="h-4 w-4 text-slate-300" />
+                                            <div className="flex-1 h-px bg-slate-100"></div>
+                                        </div>
+
+                                        <div>
+                                            <div className="text-[10px] uppercase tracking-widest font-semibold text-slate-400 mb-0.5">Destination (Vendor)</div>
+                                            <div className="text-sm font-semibold text-slate-900">{trade.destination}</div>
                                         </div>
                                     </div>
-                                    {trade.amount && (
-                                        <div className="mt-1.5 text-right">
-                                            <span className="font-mono font-black text-emerald-700 text-base">{trade.amount}</span>
-                                        </div>
-                                    )}
-                                </div>
 
-                                {/* Edit Button — visible on hover */}
-                                <div className="absolute top-3 left-3 opacity-0 group-hover:opacity-100 transition-all duration-200">
-                                    <Button
-                                        variant="secondary"
-                                        size="sm"
-                                        className="h-8 px-3 py-0 text-xs rounded-full shadow-md bg-white border border-slate-200 text-blue-700 hover:bg-blue-50"
-                                        onClick={() => handleEdit(trade)}
-                                    >
-                                        <Pencil className="h-3 w-3 mr-1" /> Edit
-                                    </Button>
-                                </div>
-                            </div>
+                                    <div className="mt-auto pt-4 border-t border-slate-100">
+                                        <div className="flex items-center justify-between mb-3">
+                                            <div className="text-xs font-semibold text-slate-500">
+                                                Net: <span className="font-mono text-blue-600 font-bold">{trade.netWeight}</span>
+                                            </div>
+                                            <div className="text-xs font-semibold text-slate-500">
+                                                @ <span className="font-mono text-slate-700">{trade.rate}</span>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center justify-between">
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                className="h-8 px-3 text-xs shadow-sm border-slate-200 text-slate-600 hover:text-blue-700 hover:bg-blue-50"
+                                                onClick={() => handleEdit(trade)}
+                                            >
+                                                <Pencil className="h-3 w-3 mr-1.5" /> Edit
+                                            </Button>
+                                            {trade.amount && (
+                                                <div className="text-right">
+                                                    <span className="font-mono font-bold text-emerald-700">{trade.amount}</span>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
                         ))}
                     </div>
                 )}

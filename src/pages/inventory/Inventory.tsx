@@ -39,7 +39,7 @@ export default function Inventory() {
                 <VendorSettlementModal open={settlementOpen} onOpenChange={setSettlementOpen} />
 
                 <div className="grid gap-4 md:grid-cols-4">
-                    <Card className="shadow-soft border-slate-100 bg-white">
+                    <Card className="shadow-soft border-slate-100 bg-white transition-all duration-300 hover:shadow-md hover:-translate-y-1 hover:border-slate-200">
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-sm font-medium">Total Valuation</CardTitle>
                             <Box className="h-4 w-4 text-slate-500" />
@@ -49,7 +49,7 @@ export default function Inventory() {
                             <p className="text-xs text-slate-500">+2.5% from last month</p>
                         </CardContent>
                     </Card>
-                    <Card className="shadow-soft border-slate-100 bg-white">
+                    <Card className="shadow-soft border-slate-100 bg-white transition-all duration-300 hover:shadow-md hover:-translate-y-1 hover:border-slate-200">
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-sm font-medium">Low Stock Alerts</CardTitle>
                             <AlertCircle className="h-4 w-4 text-rose-500" />
@@ -59,7 +59,7 @@ export default function Inventory() {
                             <p className="text-xs text-slate-500">Critical levels reached</p>
                         </CardContent>
                     </Card>
-                    <Card className="shadow-soft border-slate-100 bg-white">
+                    <Card className="shadow-soft border-slate-100 bg-white transition-all duration-300 hover:shadow-md hover:-translate-y-1 hover:border-slate-200">
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-sm font-medium">Hwala (Virtual)</CardTitle>
                             <Activity className="h-4 w-4 text-blue-500" />
@@ -69,7 +69,7 @@ export default function Inventory() {
                             <p className="text-xs text-slate-500">Held by 2 vendors</p>
                         </CardContent>
                     </Card>
-                    <Card className="shadow-soft border-slate-100 bg-white">
+                    <Card className="shadow-soft border-slate-100 bg-white transition-all duration-300 hover:shadow-md hover:-translate-y-1 hover:border-slate-200">
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-sm font-medium">Stock Efficiency</CardTitle>
                             <CheckCircle2 className="h-4 w-4 text-emerald-500" />
@@ -89,7 +89,7 @@ export default function Inventory() {
                     </TabsList>
 
                     <TabsContent value="stock" className="space-y-4">
-                        <Card className="shadow-soft border-slate-100">
+                        <Card className="shadow-soft border-slate-100 transition-all duration-300 hover:shadow-md hover:-translate-y-1 hover:border-slate-200">
                             <CardHeader>
                                 <div className="flex items-center justify-between">
                                     <div className="space-y-1">
@@ -144,7 +144,7 @@ export default function Inventory() {
                     </TabsContent>
 
                     <TabsContent value="movements">
-                        <Card className="shadow-soft border-slate-100">
+                        <Card className="shadow-soft border-slate-100 transition-all duration-300 hover:shadow-md hover:-translate-y-1 hover:border-slate-200">
                             <CardHeader>
                                 <CardTitle>Movement History</CardTitle>
                                 <CardDescription>Recent transfers and adjustments.</CardDescription>
